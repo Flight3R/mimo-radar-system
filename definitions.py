@@ -100,7 +100,8 @@ def get_intersections(pair):
 
 
 def plot_point(ax, position, color='blue', marker='o'):
-    ax.plot(position.x, position.y, color=color, marker=marker, )
+    if position is not None:
+        ax.plot(position.x, position.y, color=color, marker=marker, )
 
 
 def plot_antenna(ax, antenna, color):
@@ -113,7 +114,8 @@ def plot_line_between(ax, position1, position2, color):
 
 def plot_regression_line(ax, start_point, slope, length):
     d_y = math.sqrt(math.pow(length, 2)
-                        * math.pow(slope, 2) / (1 + math.pow(slope, 2)))
+                        * math.pow(slope, 2)
+                        / (1 + math.pow(slope, 2)))
     y1 = start_point.y + d_y
 
     intercept = calculate_intercept(start_point, slope)
@@ -148,8 +150,10 @@ def detect_object_using_antenna_set_variance(antennas, tx=None, obj_position=Non
         plot_scenario(ax, antennas, tx, obj_position)
     target_position = None
     angle = np.linspace(0, 2 * np.pi, 150)
-    how_many_circles = 20
+    how_many_circles = 40
     for antenna in antennas:
+        dipole_distance_variance = calculate_figure_center_variance(
+            [antenna.dipoles[0].position, antenna.dipoles[-1].position])
         previous_variance = math.inf
         previous_center = None
         figure_centers = []
@@ -157,8 +161,7 @@ def detect_object_using_antenna_set_variance(antennas, tx=None, obj_position=Non
             circles = []
             for dipole in antenna.dipoles:
                 signal = dipole.get_normalized_signal()
-                delta_wavelength = (signal.phase /
-                                        (2 * math.pi)) * signal.getWavelangth()
+                delta_wavelength = (signal.phase / (2 * math.pi)) * signal.getWavelangth()
                 radius = delta_wavelength + (i + 1)  * signal.getWavelangth()
                 circles.append([dipole.position.x, dipole.position.y, radius])
                 if plot:
@@ -183,18 +186,23 @@ def detect_object_using_antenna_set_variance(antennas, tx=None, obj_position=Non
                 figure_center = calculate_figure_center(cross_points_of_circles)
                 figure_centers.append(figure_center)
 
-            # try to calculate position of object basing on changing variance
-            if len(cross_points_of_circles) > 1:
-                current_variance = calculate_figure_center_variance(cross_points_of_circles)
-                if current_variance > previous_variance:
-                    target_position = previous_center
-                    break
-                else:
-                    previous_variance = current_variance
-                    previous_center = figure_center
+                # try to calculate position of object basing on changing variance
+                if len(cross_points_of_circles) > 1:
+                    current_variance = calculate_figure_center_variance(cross_points_of_circles)
+                    if current_variance > previous_variance:
+                        if current_variance > dipole_distance_variance:
+                            break
+                        else:
+                            target_position = previous_center
+                            break
+                    else:
+                        previous_variance = current_variance
+                        previous_center = figure_center
 
     if plot and target_position is not None:
         plot_point(ax, target_position, 'magenta', '*')
+        _ = ax.set_ylim(bottom=-1)
+        # _ = ax.set_xlim(left=-5, right=6)
         plt.savefig('radar_output_variance.png')
 
     return target_position
@@ -207,16 +215,17 @@ def detect_object_using_antenna_set_analytic(antennas, tx=None, obj_position=Non
         plot_scenario(ax, antennas, tx, obj_position)
     regression_lines_analytic = []
     for antenna in antennas:
-        delta_phase = wrap_phase(antenna.dipoles[0].signal.phase
-                                    - antenna.dipoles[-1].signal.phase)
+
+        phase1 = antenna.dipoles[0].signal.phase
+        phase2 = antenna.dipoles[-1].signal.phase
+        delta_phase = wrap_phase(phase1 - phase2)
         delta_wavelength = delta_phase / (2 * math.pi) * antenna.dipoles[0].signal.getWavelangth()
-        slope = math.sqrt(math.pow(antenna.antenna_diameter
-                                      / delta_wavelength, 2) - 1)
+        slope = math.sqrt((antenna.antenna_diameter / delta_wavelength) ** 2 - 1)
         regression_lines_analytic.append([slope,
                                           calculate_intercept(antenna.antenna_center,
                                                               slope)])
         if plot:
-            plot_regression_line(ax, antenna.antenna_center, slope, 20)
+            plot_regression_line(ax, antenna.antenna_center, slope, 13)
 
     # calculate position of object basing on analytic solution
     line_parameters1, line_parameters2 = regression_lines_analytic
@@ -229,15 +238,19 @@ def detect_object_using_antenna_set_analytic(antennas, tx=None, obj_position=Non
 
 
 def detect_object_using_antenna_set_regression(antennas, tx=None, obj_position=None, plot=False):
+    target_position = None
     if plot:
         fig, ax = plt.subplots()
         ax.set_aspect('equal')
         plot_scenario(ax, antennas, tx, obj_position)
     angle = np.linspace(0, 2 * np.pi, 150)
-    how_many_circles = 20
+    how_many_circles = 13
     regression_lines = []
     for antenna in antennas:
-        cross_points_of_circles = []
+        breaked = False
+        dipole_distance_variance = calculate_figure_center_variance(
+            [antenna.dipoles[0].position, antenna.dipoles[-1].position])
+        cross_points_of_all_circles = []
         for i in range(how_many_circles):
             circles = []
             for dipole in antenna.dipoles:
@@ -250,6 +263,7 @@ def detect_object_using_antenna_set_regression(antennas, tx=None, obj_position=N
                     y =  radius * np.sin(angle) + dipole.position.y
                     ax.plot(x, y, color='gray')
 
+            cross_points_of_current_circles = []
             for pair in generate_pairs(circles):
                 intersections = get_intersections(pair)
                 if intersections is not None:
@@ -258,20 +272,81 @@ def detect_object_using_antenna_set_regression(antennas, tx=None, obj_position=N
                         point = Position(x0, y0)
                     else:
                         point = Position(x1, y1)
-                    cross_points_of_circles.append(point)
+                    cross_points_of_current_circles.append(point)
                     if plot:
                         plot_point(ax, point, marker='.')
+            current_variance = calculate_figure_center_variance(cross_points_of_current_circles)
+            if current_variance > dipole_distance_variance:
+                breaked = True
+                break
+            for point in cross_points_of_current_circles:
+                cross_points_of_all_circles.append(point)
 
-        slope, intercept = calculate_linear_regression(cross_points_of_circles)
-        regression_lines.append([slope, intercept])
+        if not breaked:
+            slope, intercept = calculate_linear_regression(cross_points_of_all_circles)
+            if plot:
+                plot_regression_line(ax, antenna.antenna_center, slope, 13)
+            regression_lines.append([slope, intercept])
 
     # calculate position of object basing on linear regressions
-    line_parameters1, line_parameters2 = regression_lines
-    target_position = calculate_crossing_of_lines(line_parameters1, line_parameters2)
+    try:
+        line_parameters1, line_parameters2 = regression_lines
+        target_position = calculate_crossing_of_lines(line_parameters1, line_parameters2)
+    except Exception:
+        pass
     if plot:
         plot_point(ax, target_position, 'magenta', '*')
+        _ = ax.set_ylim(bottom=-1)
+        # _ = ax.set_xlim(left=-5, right=6)
         plt.savefig('radar_output_regression.png')
+
     return target_position
+
+
+def simulate(antennas, tx, object, phase_error_coef=0.00):
+    object.reflect_signal(tx)
+    for antenna in antennas:
+        for dipole in antenna.dipoles:
+            dipole.recieve_signal(object, phase_error_coef)
+
+
+def guess_target_position(found_positions):
+    found_coords= np.array([[pos.x, pos.y] for pos in found_positions])
+    # x_rsm = np.sqrt(np.mean(found_coords[:, 0] ** 2))
+    # y_rsm = np.sqrt(np.mean(found_coords[:, 1] ** 2))
+    x_rsm = np.mean(found_coords[:, 0])
+    y_rsm = np.mean(found_coords[:, 1])
+    return Position(x_rsm, y_rsm)
+
+def detect_object_phase_increment(method, antennas, tx, object, phase_error_coef=0.0):
+    match method:
+        case "analytic":
+            detection_function = detect_object_using_antenna_set_analytic
+        case "regression":
+            detection_function = detect_object_using_antenna_set_regression
+        case "variance":
+            detection_function = detect_object_using_antenna_set_variance
+
+    phases = np.linspace(0, 2 * np.pi, 10, endpoint=False)
+    found_positions = []
+    for phase in phases:
+        tx.signal.setPhase(phase)
+        simulate(antennas, tx, object, phase_error_coef)
+        target_position = detection_function(antennas, tx)
+        if target_position is not None:
+            found_positions.append(target_position)
+    location_guess = guess_target_position(found_positions)
+    fig, ax = plt.subplots()
+    plot_scenario(ax, antennas, tx, object.position)
+    for pos in found_positions:
+        plot_point(ax, pos, 'magenta', '.')
+    plot_point(ax, location_guess, marker='*')
+    # plot_point(ax, object.position, marker='*', color='red')
+
+
+    plt.savefig(f"phase_increment_{method}.png")
+    return location_guess
+
 
 
 #############################################################
@@ -343,34 +418,22 @@ class RxDipole(Dipole):
         self.signal = signal
         self.reference_signal = Signal(0, 0, 0)
 
-    def recieve_signal(self, txAnt, reference=False, phase_error_coef=0):
+    def recieve_signal(self, txAnt, phase_error_coef=0):
         if (txAnt.signal.power > 0):
             distance = calculate_distance(self.position, txAnt.position)
             current_fsl = calculate_fsl(distance, txAnt.signal.frequency)
             current_rsl = txAnt.signal.power - current_fsl
             phase_error = random.uniform(-2 * math.pi, 2 * math.pi) * phase_error_coef
-            if (reference):
-                if (current_rsl > 0):
-                    self.reference_signal.setPhase(
-                        calculate_phase(txAnt.signal.frequency,
-                                        txAnt.signal.phase,
-                                        distance) + phase_error)
-                    self.reference_signal.power = current_rsl
-                    self.reference_signal.frequency = txAnt.signal.frequency
-                else:
-                    print("reference signal RSL=0!")
+            if (current_rsl > 0):
+                self.signal.setPhase(calculate_phase(txAnt.signal.frequency, txAnt.signal.phase, distance)
+                                        + phase_error)
+                self.signal.power = current_rsl
             else:
-                if (current_rsl > 0):
-                    self.signal.setPhase(self.signal.phase +
-                                         calculate_phase(txAnt.signal.frequency, txAnt.signal.phase, distance) *
-                                            current_rsl / (current_rsl + self.signal.power)
-                                         + phase_error)
-                    self.signal.power += current_rsl
-                else:
-                    print("RSL=0")
+                print("RSL=0")
 
     def get_normalized_signal(self):
         if self.reference_signal.power > 0 and self.signal.power != self.reference_signal.power:
+            print('ref signal!!!')
             phase = (self.signal.phase * self.signal.power
                         - self.reference_signal.phase * self.reference_signal.power) / (self.signal.power - self.reference_signal.power)
             power = self.signal.power - self.reference_signal.power
