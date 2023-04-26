@@ -1,6 +1,9 @@
 # Plots
 *.png
 
+# Csv
+*.csv
+
 # Tests and drafts
 *_test.py
 
