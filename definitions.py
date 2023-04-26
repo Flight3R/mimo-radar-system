@@ -78,9 +78,11 @@ def calculate_fsl(distance: float, frequency: float) -> float:
 
 
 def calculate_distance(position1: Position, position2: Position) -> float:
-    return math.sqrt(math.pow(position1.x - position2.x, 2)
-                        + math.pow(position1.y - position2.y, 2))
-
+    try:
+        return math.sqrt(math.pow(position1.x - position2.x, 2)
+                            + math.pow(position1.y - position2.y, 2))
+    except AttributeError:
+        return None
 
 def generate_pairs(array: list) -> list:
     return list(it.combinations(array, 2))

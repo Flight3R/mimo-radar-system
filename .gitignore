@@ -4,9 +4,6 @@
 # Csv
 *.csv
 
-# Tests and drafts
-*_test.py
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
