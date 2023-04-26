@@ -320,7 +320,10 @@ def detect_object_using_antenna_set_regression(antennas: list, tx=None, obj_posi
                     cross_points_of_current_circles.append(point)
                     if plot:
                         plot_point(ax, point, marker='.')
-            current_variance = calculate_figure_center_variance(cross_points_of_current_circles)
+            try:
+                current_variance = calculate_figure_center_variance(cross_points_of_current_circles)
+            except stat.StatisticsError:
+                return None
             if current_variance > dipole_distance_variance:
                 breaked = True
                 break
@@ -382,7 +385,10 @@ def detect_object_phase_increment(method: str, antennas: list, tx: TxDipole, obj
         target_position = detection_function(antennas, tx, object.position)
         if target_position is not None:
             found_positions.append(target_position)
-    location_guess = guess_target_position(found_positions)
+    try:
+        location_guess = guess_target_position(found_positions)
+    except IndexError:
+        return None
     if plot:
         fig, ax = plt.subplots()
         plot_scenario(ax, antennas, tx, object.position)
