@@ -372,7 +372,7 @@ def select_detection_method(method: str) -> function:
     return detection_function
 
 
-def detect_object_phase_increment(method: str, antennas: list, tx: TxDipole, object: TxDipole, phase_error_coef=0.0) -> Position:
+def detect_object_phase_increment(method: str, antennas: list, tx: TxDipole, object: TxDipole, phase_error_coef=0.0, plot=False) -> Position:
     detection_function = select_detection_method(method)
     phases = np.linspace(0, 2 * np.pi, 10, endpoint=False)
     found_positions = []
@@ -383,15 +383,14 @@ def detect_object_phase_increment(method: str, antennas: list, tx: TxDipole, obj
         if target_position is not None:
             found_positions.append(target_position)
     location_guess = guess_target_position(found_positions)
-    fig, ax = plt.subplots()
-    plot_scenario(ax, antennas, tx, object.position)
-    for pos in found_positions:
-        plot_point(ax, pos, 'magenta', '.')
-    plot_point(ax, location_guess, marker='*')
-    # plot_point(ax, object.position, marker='*', color='red')
-
-
-    plt.savefig(f"phase_increment_{method}.png")
+    if plot:
+        fig, ax = plt.subplots()
+        plot_scenario(ax, antennas, tx, object.position)
+        for pos in found_positions:
+            plot_point(ax, pos, 'magenta', '.')
+        plot_point(ax, location_guess, marker='*')
+        # plot_point(ax, object.position, marker='*', color='red')
+        plt.savefig(f"phase_increment_{method}.png")
     return location_guess
 
 

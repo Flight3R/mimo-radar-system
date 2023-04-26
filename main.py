@@ -79,7 +79,7 @@ if True:
 if True:
     for mt in method:
         start = time.time()
-        target_position = detect_object_phase_increment(methods[mt], antennas, tx, object, phase_error_coef)
+        target_position = detect_object_phase_increment(methods[mt], antennas, tx, object, phase_error_coef, plot=True)
         end = time.time()
         print(f"{' OBJECT DETECTION - phase increment ' :=^50}")
         print(f"{'method=': <20}{methods[mt]}")
