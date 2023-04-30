@@ -19,7 +19,7 @@ import time
 #############################################################
 wavelength = 2
 dipole_spread = 1
-antenna_spread = 8
+antenna_spread = 15
 
 frequency = SPEED_OF_LIGHT/wavelength
 dipoles1 = [
@@ -42,7 +42,7 @@ antennas = [
 
 
 # transmitter antenna x,y center
-tx = TxDipole(Position(10, 10), Signal(phase=0, power=100, frequency=frequency))
+tx = TxDipole(Position(15, 10), Signal(phase=0, power=100, frequency=frequency))
 
 fig, ax = plt.subplots()
 plot_scenario(ax, antennas, tx, None)
@@ -55,5 +55,5 @@ methods = [
 ]
 
 for method in methods:
-    heat_map = create_heat_map(100, 0.25, method, antennas, tx, phase_error_coef=0.0, plot=True)
+    heat_map = create_heat_map(200, 0.6, method, antennas, tx, phase_error_coef=0.0, plot=True)
     # print(heat_map)
