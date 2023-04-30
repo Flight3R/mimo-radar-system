@@ -1,7 +1,7 @@
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtWidgets import QGroupBox, QVBoxLayout, QCheckBox
 
-from logic.settings import Settings
+from dto.settings import Settings
 
 
 class ResultsBox(QGroupBox):

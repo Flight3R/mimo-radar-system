@@ -1,91 +1,60 @@
-from definitions import *
-import os
-import glob
-import time
+import sys
 
-# all lengths are in meters
-# all time in seconds
-# all angles in radians if not specified otherwise
-# all powers in dBW
+from PyQt6.QtWidgets import *
 
-#############################################################
-#                       INITIALIZATION
-#############################################################
-wavelength = 2
-dipole_spread = 1
-antenna_spread = 15
-
-frequency = SPEED_OF_LIGHT/wavelength
-dipoles1 = [
-    RxDipole(Position(-dipole_spread - antenna_spread / 2, 0), Signal(0, 0, frequency)),
-    RxDipole(Position(               - antenna_spread / 2, 0), Signal(0, 0, frequency)),
-    RxDipole(Position( dipole_spread - antenna_spread / 2, 0), Signal(0, 0, frequency))
-]
-
-dipoles2 = [
-    RxDipole(Position(-dipole_spread + antenna_spread / 2, 0), Signal(0, 0, frequency)),
-    RxDipole(Position(               + antenna_spread / 2, 0), Signal(0, 0, frequency)),
-    RxDipole(Position( dipole_spread + antenna_spread / 2, 0), Signal(0, 0, frequency))
-]
+from widgets.canvasBox import CanvasBox
+from widgets.parametersBox import ParametersBox
+from widgets.resultsBox import ResultsBox
 
 
-antennas = [
-    RxAntennaArray(dipoles1),
-    RxAntennaArray(dipoles2)
-]
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super(MainWindow, self).__init__()
 
-# transmitter antenna x,y center
-tx = TxDipole(Position(15, 10), Signal(phase=1, power=400, frequency=frequency))
+        self.setWindowTitle("MIMO object radar simulator")
+        self.resize(1200, 700)
 
-# measured object x,y center
-obj_position = Position(5, -30)
+        layout = QHBoxLayout()
 
-phase_error_coef = 0.00
-#############################################################
-#                         SIMULATION
-#############################################################
-object = TxDipole(obj_position, is_reflector=True)
+        self.parameters_box = ParametersBox()
+        self.parameters_box.value_changed.connect(self.repaint_canvas)
+        self.parameters_box.run_simulation.connect(self.run_simulation)
+        layout.addWidget(self.parameters_box)
+        layout.setStretchFactor(self.parameters_box, 3)
 
-simulate(antennas, tx, object, phase_error_coef)
+        self.canvas_box = CanvasBox()
+        layout.addWidget(self.canvas_box)
+        layout.setStretchFactor(self.canvas_box, 4)
 
-#############################################################
-#                           PLOTS
-#############################################################
-for output in glob.glob(f"{os.getcwd()}/*.png"):
-    os.remove(output)
+        self.results_box = ResultsBox()
+        self.results_box.value_changed.connect(self.repaint_canvas)
+        layout.addWidget(self.results_box)
+        layout.setStretchFactor(self.results_box, 3)
 
-method = [0, 1, 2]
-methods = [
-    'analytic',
-    'regression',
-    'variance'
-]
+        widget = QWidget()
+        widget.setLayout(layout)
+        self.setCentralWidget(widget)
 
-if True:
-    for mt in method:
-        detection_method = select_detection_method(methods[mt])
-        start = time.time()
-        target_position = detection_method(antennas, tx, obj_position, plot=True)
-        end = time.time()
-        print(f"{' OBJECT DETECTION ' :=^50}")
-        print(f"{'method=': <20}{methods[mt]}")
-        if target_position is not None:
-            print(f"{'target_position=' : <20}{target_position :.5}")
-            print(f"{'position error=' : <20}{calculate_distance(target_position, obj_position) :.5}")
-        else:
-            print(f"{'target_position=' : <20}{'Not found'}")
-        print(f"{'time=' : <20}{end-start :.5}")
+    def repaint_canvas(self):
+        object, antennas, transmitters = self.parameters_box.get_data()
+        settings = self.results_box.get_settings()
 
-if True:
-    for mt in method:
-        start = time.time()
-        target_position = detect_object_phase_increment(methods[mt], antennas, tx, object, phase_error_coef, plot=True)
-        end = time.time()
-        print(f"{' OBJECT DETECTION - phase increment ' :=^50}")
-        print(f"{'method=': <20}{methods[mt]}")
-        if target_position is not None:
-            print(f"{'target_position=' : <20}{target_position :.5}")
-            print(f"{'position error=' : <20}{calculate_distance(target_position, obj_position) :.5}")
-        else:
-            print(f"{'target_position=' : <20}{'Not found'}")
-        print(f"{'time=' : <20}{end-start :.5}")
+        self.canvas_box.canvas.repaint_canvas(object, antennas, transmitters, settings)
+
+    def run_simulation(self):
+        self.set_enabled_childrens(self.parameters_box, False)
+
+    def set_enabled_childrens(self, container, value):
+        for child in container.children():
+            if isinstance(child, QWidget):
+                child.setEnabled(False)
+                self.set_enabled_childrens(child, value)
+
+
+
+
+app = QApplication(sys.argv)
+window = MainWindow()
+window.show()
+
+app.exec()

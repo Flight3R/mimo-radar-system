@@ -2,7 +2,7 @@ from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QWidget, QSpinBox, QLabel, QHBoxLayout
 
 from globalDef import global_big_spacing, sandbox_size
-from logic.coordinates import Coordinates
+from dto.coordinates import Coordinates
 
 
 class CoordinateInput(QWidget):

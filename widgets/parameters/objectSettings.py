@@ -2,7 +2,7 @@ from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QWidget, QGroupBox, QVBoxLayout, QLineEdit
 
 from globalDef import global_big_spacing, global_small_spacing
-from logic.object import Object
+from dto.object import Object
 from widgets.inputs.coordinateInput import CoordinateInput
 from widgets.inputs.keyValueInput import KeyValueInput
 

@@ -2,9 +2,9 @@ from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea, QLineEdit, QSizePolicy
 
 from globalDef import global_small_spacing, global_big_spacing
-from logic.antenna import Antenna
-from logic.coordinates import Coordinates
-from logic.transmitter import Transmitter
+from dto.antenna import Antenna
+from dto.coordinates import Coordinates
+from dto.transmitter import Transmitter
 from widgets.inputs.coordinateInput import CoordinateInput
 from widgets.inputs.keyValueInput import KeyValueInput
 

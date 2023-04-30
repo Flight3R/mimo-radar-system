@@ -2,7 +2,7 @@ from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QScrollArea, QLineEdit
 
 from globalDef import global_small_spacing, global_big_spacing
-from logic.antenna import Antenna
+from dto.antenna import Antenna
 from widgets.inputs.coordinateInput import CoordinateInput
 from widgets.inputs.keyValueInput import KeyValueInput
 
