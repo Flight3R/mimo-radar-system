@@ -1,12 +1,10 @@
 from PyQt6.QtCore import pyqtSignal
-from PyQt6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea, QLineEdit, QSizePolicy
+from PyQt6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QScrollArea, QLineEdit
 
 from globalDef import global_small_spacing, global_big_spacing
-from dto.antenna import Antenna
-from dto.coordinates import Coordinates
 from dto.transmitter import Transmitter
-from widgets.inputs.coordinateInput import CoordinateInput
-from widgets.inputs.keyValueInput import KeyValueInput
+from widgets.parameters.inputs.coordinateInput import CoordinateInput
+from widgets.parameters.inputs.keyValueInput import KeyValueInput
 
 
 class TransmittersList(QWidget):

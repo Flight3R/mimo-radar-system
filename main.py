@@ -7,6 +7,13 @@ from widgets.parametersBox import ParametersBox
 from widgets.resultsBox import ResultsBox
 
 
+def set_enabled_childrens(container, value):
+    for child in container.children():
+        if isinstance(child, QWidget):
+            child.setEnabled(value)
+            set_enabled_childrens(child, value)
+
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -18,7 +25,6 @@ class MainWindow(QMainWindow):
 
         self.parameters_box = ParametersBox()
         self.parameters_box.value_changed.connect(self.repaint_canvas)
-        self.parameters_box.run_simulation.connect(self.run_simulation)
         layout.addWidget(self.parameters_box)
         layout.setStretchFactor(self.parameters_box, 3)
 
@@ -27,7 +33,9 @@ class MainWindow(QMainWindow):
         layout.setStretchFactor(self.canvas_box, 4)
 
         self.results_box = ResultsBox()
-        self.results_box.value_changed.connect(self.repaint_canvas)
+        self.results_box.settings_changed.connect(self.repaint_canvas)
+        self.results_box.run_simulation.connect(self.run_simulation)
+        self.results_box.back_to_edit.connect(self.back_to_edit)
         layout.addWidget(self.results_box)
         layout.setStretchFactor(self.results_box, 3)
 
@@ -38,22 +46,16 @@ class MainWindow(QMainWindow):
 
     def repaint_canvas(self):
         object, antennas, transmitters = self.parameters_box.get_data()
-        settings = self.results_box.get_settings()
-
+        settings = self.results_box.drawing_settings.get_settings()
         self.canvas_box.repaint_canvas(object, antennas, transmitters, settings)
 
-
     def run_simulation(self):
-        self.set_enabled_childrens(self.parameters_box, False)
-        self.canvas_box.setEnabled(False)
+        set_enabled_childrens(self.parameters_box, False)
+        set_enabled_childrens(self.canvas_box, False)
 
-    def set_enabled_childrens(self, container, value):
-        for child in container.children():
-            if isinstance(child, QWidget):
-                child.setEnabled(False)
-                self.set_enabled_childrens(child, value)
-
-
+    def back_to_edit(self):
+        set_enabled_childrens(self.parameters_box, True)
+        set_enabled_childrens(self.canvas_box, True)
 
 
 app = QApplication(sys.argv)
