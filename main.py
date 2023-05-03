@@ -39,7 +39,7 @@ class MainWindow(QMainWindow):
         object, antennas, transmitters = self.parameters_box.get_data()
         settings = self.results_box.get_settings()
 
-        self.canvas_box.canvas.repaint_canvas(object, antennas, transmitters, settings)
+        self.canvas_box.repaint_canvas(object, antennas, transmitters, settings)
 
     def run_simulation(self):
         self.set_enabled_childrens(self.parameters_box, False)
