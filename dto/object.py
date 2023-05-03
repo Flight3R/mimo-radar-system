@@ -1,5 +1,6 @@
 class Object:
-    def __init__(self, name, coordinates, reflection):
+    def __init__(self, index, name, coordinates, reflection):
+        self.index = index
         self.name = name
         self.coordinates = coordinates
         self.reflection = reflection

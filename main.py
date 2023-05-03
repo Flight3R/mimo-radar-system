@@ -22,7 +22,7 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.parameters_box)
         layout.setStretchFactor(self.parameters_box, 3)
 
-        self.canvas_box = CanvasBox()
+        self.canvas_box = CanvasBox(self.parameters_box.update_position)
         layout.addWidget(self.canvas_box)
         layout.setStretchFactor(self.canvas_box, 4)
 
@@ -34,6 +34,7 @@ class MainWindow(QMainWindow):
         widget = QWidget()
         widget.setLayout(layout)
         self.setCentralWidget(widget)
+        self.repaint_canvas()
 
     def repaint_canvas(self):
         object, antennas, transmitters = self.parameters_box.get_data()
@@ -41,8 +42,10 @@ class MainWindow(QMainWindow):
 
         self.canvas_box.repaint_canvas(object, antennas, transmitters, settings)
 
+
     def run_simulation(self):
         self.set_enabled_childrens(self.parameters_box, False)
+        self.canvas_box.setEnabled(False)
 
     def set_enabled_childrens(self, container, value):
         for child in container.children():

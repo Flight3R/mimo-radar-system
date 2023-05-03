@@ -27,5 +27,8 @@ class KeyValueInput(QWidget):
 
         self.setLayout(hbox)
 
-    def value(self):
+    def get_value(self):
         return self.spin.value()
+
+    def set_value(self, x):
+        self.spin.setValue(x)

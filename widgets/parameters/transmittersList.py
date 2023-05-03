@@ -47,6 +47,10 @@ class TransmittersList(QWidget):
         vbox = QVBoxLayout()
         vbox.setSpacing(0)
 
+        index = QLineEdit("transmitter_" + str(self.items_counter))
+        index.setVisible(False)
+        vbox.addWidget(index)
+
         # label & remove button
         labelWidget = QWidget()
         hbox = QHBoxLayout()
@@ -90,14 +94,19 @@ class TransmittersList(QWidget):
     def get_items(self):
         transmitters = []
         for item in self.items:
-            name = item.layout().itemAt(0).widget().layout().itemAt(0).widget().text()
-            power = item.layout().itemAt(1).widget().value()
-            coordinate = item.layout().itemAt(2).widget().value()
+            index = item.layout().itemAt(0).widget().text()
+            name = item.layout().itemAt(1).widget().layout().itemAt(0).widget().text()
+            power = item.layout().itemAt(2).widget().get_value()
+            coordinate = item.layout().itemAt(3).widget().get_value()
 
-            transmitters.append(Transmitter(name, coordinate, power))
+            transmitters.append(Transmitter(index, name, coordinate, power))
 
         return transmitters
 
+    def update_coordinates(self, index, coordinates):
+        filtered = list(filter(lambda item: item.layout().itemAt(0).widget().text() == index, self.items))
+        assert len(filtered) == 1
 
+        filtered[0].layout().itemAt(3).widget().set_value(coordinates)
 
 

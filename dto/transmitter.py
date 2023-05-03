@@ -1,5 +1,6 @@
 class Transmitter:
-    def __init__(self, name, coordinates, power):
+    def __init__(self, index, name, coordinates, power):
+        self.index = index
         self.name = name
         self.coordinates = coordinates
         self.power = power

@@ -25,3 +25,4 @@ class GraphicsView(QGraphicsView):
         painter.setPen(QPen(QColor(0, 0, 0), 1))
         painter.drawLine(-sandbox_size, 0, sandbox_size, 0)
         painter.drawLine(0, -sandbox_size, 0, sandbox_size)
+

@@ -1,3 +1,4 @@
+from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtGui import QPalette, QColor, QPainter, QPen, QColorConstants
 from PyQt6.QtWidgets import QWidget, QGroupBox, QGraphicsView, QGraphicsScene, QVBoxLayout
 
@@ -8,8 +9,9 @@ from widgets.canvas.pointItem import PointItem
 
 
 class CanvasBox(QGroupBox):
-    def __init__(self):
+    def __init__(self, item_moved):
         super(CanvasBox, self).__init__("Canvas")
+        self.item_moved = item_moved
         self.scene = QGraphicsScene()
         self.scene.setSceneRect(-sandbox_size, -sandbox_size, 2*sandbox_size, 2*sandbox_size)
 
@@ -19,13 +21,22 @@ class CanvasBox(QGroupBox):
         layout.addWidget(self.view)
         self.setLayout(layout)
 
+
     def repaint_canvas(self, object, antennas, transmitters, settings):
         self.scene.clear()
 
-        self.scene.addItem(PointItem(object.coordinates, object.name, settings.show_names, QColorConstants.Red))
+        object_item = PointItem(object.index, object.coordinates, object.name,
+                                settings.show_names, self.item_moved, QColorConstants.Red)
+        self.scene.addItem(object_item)
 
         for antenna in antennas:
-            self.scene.addItem(PointItem(antenna.coordinates, antenna.name, settings.show_names, QColorConstants.Blue))
+            antenna_item = PointItem(antenna.index, antenna.coordinates, antenna.name,
+                                     settings.show_names, self.item_moved, QColorConstants.Blue)
+            self.scene.addItem(antenna_item)
 
         for transmitter in transmitters:
-            self.scene.addItem(PointItem(transmitter.coordinates, transmitter.name, settings.show_names, QColorConstants.Green))
+            transmitter_item = PointItem(transmitter.index, transmitter.coordinates, transmitter.name,
+                                         settings.show_names, self.item_moved, QColorConstants.Green)
+            self.scene.addItem(transmitter_item)
+
+

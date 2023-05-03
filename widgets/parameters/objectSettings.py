@@ -31,7 +31,10 @@ class ObjectSettings(QWidget):
 
     def get_object(self):
         name = self.label.text()
-        coordinates = self.coordinate_input.value()
-        reflection = self.reflection_input.value()
+        coordinates = self.coordinate_input.get_value()
+        reflection = self.reflection_input.get_value()
 
-        return Object(name, coordinates, reflection)
+        return Object("object", name, coordinates, reflection)
+
+    def update_coordinates(self, coordinates):
+        self.coordinate_input.set_value(coordinates)

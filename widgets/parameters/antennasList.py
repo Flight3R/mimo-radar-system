@@ -45,6 +45,10 @@ class AntennasList(QWidget):
         vbox = QVBoxLayout()
         vbox.setSpacing(0)
 
+        index = QLineEdit("antenna_" + str(self.items_counter))
+        index.setVisible(False)
+        vbox.addWidget(index)
+
         # label & remove button
         labelWidget = QWidget()
         hbox = QHBoxLayout()
@@ -92,14 +96,21 @@ class AntennasList(QWidget):
     def get_items(self):
         antennas = []
         for item in self.items:
-            name = item.layout().itemAt(0).widget().layout().itemAt(0).widget().text()
-            dipole_number = item.layout().itemAt(1).widget().value()
-            dipole_distance = item.layout().itemAt(2).widget().value()
-            coordinate = item.layout().itemAt(3).widget().value()
+            index = item.layout().itemAt(0).widget().text()
+            name = item.layout().itemAt(1).widget().layout().itemAt(0).widget().text()
+            dipole_number = item.layout().itemAt(2).widget().get_value()
+            dipole_distance = item.layout().itemAt(3).widget().get_value()
+            coordinate = item.layout().itemAt(4).widget().get_value()
 
-            antennas.append(Antenna(name, coordinate, dipole_number, dipole_distance))
+            antennas.append(Antenna(index, name, coordinate, dipole_number, dipole_distance))
 
         return antennas
+
+    def update_coordinates(self, index, coordinates):
+        filtered = list(filter(lambda item: item.layout().itemAt(0).widget().text() == index, self.items))
+        assert len(filtered) == 1
+
+        filtered[0].layout().itemAt(4).widget().set_value(coordinates)
 
 
 

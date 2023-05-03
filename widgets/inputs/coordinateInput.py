@@ -39,7 +39,11 @@ class CoordinateInput(QWidget):
 
         self.setLayout(hbox)
 
-    def value(self):
+    def get_value(self):
         x = self.x_spin.value()
         y = self.y_spin.value()
         return Coordinates(x, y)
+
+    def set_value(self, coordinates):
+        self.x_spin.setValue(coordinates.x)
+        self.y_spin.setValue(coordinates.y)
