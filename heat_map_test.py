@@ -44,9 +44,9 @@ antennas = [
 # transmitter antenna x,y center
 tx = TxDipole(Position(15, 10), Signal(phase=0, power=100, frequency=frequency))
 
-fig, ax = plt.subplots()
-plot_scenario(ax, antennas, tx, None)
-fig.savefig("scenario.png")
+# fig, ax = plt.subplots()
+# plot_scenario(ax, antennas, tx, None)
+# fig.savefig("scenario.png")
 
 methods = [
     'analytic',
@@ -55,5 +55,5 @@ methods = [
 ]
 
 for method in methods:
-    heat_map = create_heat_map(200, 0.6, method, antennas, tx, phase_error_coef=0.0, plot=True)
+    heat_map = create_heat_map(100, 0.5, method, antennas, tx, phase_error_coef=0.0, plot=True)
     # print(heat_map)

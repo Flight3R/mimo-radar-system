@@ -190,7 +190,7 @@ def get_quater_of_object_relative_to_antenna(antenna: RxAntennaArray, obj_positi
     return 4
 
 
-def detect_object_using_antenna_set_variance(antennas: list, tx=None, obj_position=None, plot=False) -> Position:
+def detect_object_using_antenna_set_variance(antennas: list, tx: TxDipole, obj_position: Position, plot=False) -> Position:
     if plot:
         fig, ax = plt.subplots()
         ax.set_aspect('equal')
@@ -260,7 +260,7 @@ def detect_object_using_antenna_set_variance(antennas: list, tx=None, obj_positi
     return target_position
 
 
-def detect_object_using_antenna_set_analytic(antennas: list, tx=None, obj_position=None, plot=False) -> Position:
+def detect_object_using_antenna_set_analytic(antennas: list, tx: TxDipole, obj_position: Position, plot=False) -> Position:
     if plot:
         fig, ax = plt.subplots()
         ax.set_aspect('equal')
@@ -294,7 +294,7 @@ def detect_object_using_antenna_set_analytic(antennas: list, tx=None, obj_positi
     return target_position
 
 
-def detect_object_using_antenna_set_regression(antennas: list, tx=None, obj_position=None, plot=False) -> Position:
+def detect_object_using_antenna_set_regression(antennas: list, tx: TxDipole, obj_position: Position, plot=False) -> Position:
     target_position = None
     if plot:
         fig, ax = plt.subplots()
@@ -458,6 +458,24 @@ def create_antenna_array(dipole_number: int, dipole_spread: int, wavelength: flo
         print(x)
         dipoles.append(RxDipole(Position(x, center_y), Signal(0, 0, frequency)))
     return RxAntennaArray(dipoles)
+
+
+def create_transmitter(positon: Position, phase_offset: float, wavelength: float) -> TxDipole:
+    frequency = SPEED_OF_LIGHT/wavelength
+    return TxDipole(positon, Signal(phase=phase_offset, power=0, frequency=frequency))
+
+
+def create_object(positon: Position) -> TxDipole:
+    return TxDipole(positon, is_reflector=True)
+
+
+def detect_object(method: str, phase_increment: bool, antennas: list, tx: TxDipole, object: TxDipole, phase_error_coef=0.0) -> Position:
+    if phase_increment:
+        return detect_object_phase_increment(method, antennas, tx, object, phase_error_coef)
+    else:
+        simulate(antennas, tx, object, phase_error_coef)
+        detection_method = select_detection_method(method)
+        return detection_method(antennas, tx, object.position)
 
 
 #############################################################
