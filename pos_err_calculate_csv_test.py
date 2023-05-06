@@ -40,7 +40,7 @@ tx = TxDipole(Position(15, 10), Signal(phase=3, power=400, frequency=frequency))
 # measured object x,y center
 obj_position = Position(5, -30)
 
-with open("pos_err.csv", "w") as myfile:
+with open("plots&data/pos_err.csv", "w") as myfile:
     myfile.write("rng_run;method;phase_increment;phase_err;pos_err\n")
 
 for rng_run in range(200, 210):
@@ -69,10 +69,10 @@ for rng_run in range(200, 210):
             detection_method = select_detection_method(method)
             target_position = detection_method(antennas, tx, obj_position, plot=False)
             pos_err = calculate_distance(target_position, obj_position)
-            with open("pos_err.csv", "a") as myfile:
+            with open("plots&data/pos_err.csv", "a") as myfile:
                 myfile.write(f"{rng_run};{method};{False};{phase_err};{pos_err}\n")
 
             target_position = detect_object_phase_increment(method, antennas, tx, object, phase_error_coef, plot=False)
             pos_err = calculate_distance(target_position, obj_position)
-            with open("pos_err.csv", "a") as myfile:
+            with open("plots&data/pos_err.csv", "a") as myfile:
                 myfile.write(f"{rng_run};{method};{True};{phase_err};{pos_err}\n")

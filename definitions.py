@@ -20,7 +20,7 @@ def calculate_crossing_of_lines(line_parameters1: list, line_parameters2: list) 
         x = (intercept1 - intercept2) / (slope2 - slope1)
         y = slope1 * x + intercept1
         return Position(x, y)
-    except ValueError:
+    except ValueError as e:
         return None
 
 
@@ -52,7 +52,7 @@ def calculate_line(point_A: Position, point_B: Position) -> tuple:
         slope = (point_A.y - point_B.y) / (point_A.x - point_B.x)
         intercept = calculate_intercept(point_A, slope)
         return slope, intercept
-    except ValueError:
+    except ValueError as e:
         return None
 
 
@@ -68,7 +68,7 @@ def calculate_angle(position1: Position, position2: Position) -> float:
         if dx < 0 and dy > 0:
             return math.pi - angle
         return math.pi + angle
-    except ValueError:
+    except ValueError as e:
         return None
 
 
@@ -76,7 +76,7 @@ def calculate_deg_angle(position1: Position, position2: Position) -> float:
     try:
         slope, _ = calculate_line(position1, position2)
         return slope * 360 / (2 * math.pi)
-    except ValueError:
+    except ValueError as e:
         return None
 
 
@@ -96,7 +96,7 @@ def calculate_distance(position1: Position, position2: Position) -> float:
     try:
         return math.sqrt(math.pow(position1.x - position2.x, 2)
                             + math.pow(position1.y - position2.y, 2))
-    except AttributeError:
+    except AttributeError as e:
         return None
 
 def generate_pairs(array: list) -> list:
@@ -129,12 +129,12 @@ def get_intersections(pair: tuple) -> tuple:
             x4 = x2 - h * (y1 - y0) / d
             y4 = y2 + h * (x1 - x0) / d
             return x3, y3, x4, y4
-    except ValueError:
+    except ValueError as e:
         return None
 
 def plot_point(ax: plt.Axes, position: Position, color='blue', marker='o'):
     if position is not None:
-        ax.plot(position.x, position.y, color=color, marker=marker, )
+        ax.plot(position.x, position.y, color=color, marker=marker)
 
 
 def plot_antenna(ax: plt.Axes, antenna: Dipole, color: str):
@@ -255,7 +255,7 @@ def detect_object_using_antenna_set_variance(antennas: list, tx: TxDipole, obj_p
 
     if plot and target_position is not None:
         plot_point(ax, target_position, 'magenta', '*')
-        plt.savefig('radar_output_variance.png')
+        plt.savefig('plots&data/radar_output_variance.png')
 
     return target_position
 
@@ -290,7 +290,7 @@ def detect_object_using_antenna_set_analytic(antennas: list, tx: TxDipole, obj_p
                                                   line_parameters2)
     if plot:
         plot_point(ax, target_position, 'magenta', '*')
-        plt.savefig('radar_output_analytic.png')
+        plt.savefig('plots&data/radar_output_analytic.png')
     return target_position
 
 
@@ -301,7 +301,7 @@ def detect_object_using_antenna_set_regression(antennas: list, tx: TxDipole, obj
         ax.set_aspect('equal')
         plot_scenario(ax, antennas, tx, obj_position)
     angle = np.linspace(0, 2 * np.pi, 150)
-    how_many_circles = 13
+    how_many_circles = 7
     regression_lines = []
     for antenna in antennas:
         breaked = False
@@ -342,7 +342,8 @@ def detect_object_using_antenna_set_regression(antennas: list, tx: TxDipole, obj
                         plot_point(ax, point, marker='.')
             try:
                 current_variance = calculate_figure_center_variance(cross_points_of_current_circles)
-            except stat.StatisticsError:
+            except stat.StatisticsError as e:
+                print(e) if plot else None
                 return None
             if current_variance > dipole_distance_variance:
                 breaked = True
@@ -359,12 +360,13 @@ def detect_object_using_antenna_set_regression(antennas: list, tx: TxDipole, obj
     # calculate position of object basing on linear regressions
     try:
         line_parameters1, line_parameters2 = regression_lines
-    except ValueError:
+    except ValueError as e:
+        print(e) if plot else None
         return None
     target_position = calculate_crossing_of_lines(line_parameters1, line_parameters2)
     if plot:
         plot_point(ax, target_position, 'magenta', '*')
-        plt.savefig('radar_output_regression.png')
+        plt.savefig('plots&data/radar_output_regression.png')
     return target_position
 
 
@@ -406,7 +408,8 @@ def detect_object_phase_increment(method: str, antennas: list, tx: TxDipole, obj
             found_positions.append(target_position)
     try:
         location_guess = guess_target_position(found_positions)
-    except IndexError:
+    except IndexError as e:
+        print(e) if plot else None
         return None
     if plot:
         fig, ax = plt.subplots()
@@ -415,7 +418,7 @@ def detect_object_phase_increment(method: str, antennas: list, tx: TxDipole, obj
             plot_point(ax, pos, 'magenta', '.')
         plot_point(ax, location_guess, marker='*')
         # plot_point(ax, object.position, marker='*', color='red')
-        plt.savefig(f"phase_increment_{method}.png")
+        plt.savefig(f"plots&data/phase_increment_{method}.png")
     return location_guess
 
 
@@ -444,7 +447,7 @@ def create_heat_map(edge_length: float, resolution: float, method: str, antennas
         ax.set_title(f"Heatmap of {method} method\n{edge_length=}m, {resolution=}samples/square")
         cbar = fig.colorbar(mesh, ax=ax)
         cbar.set_label("Position error [m]")
-        fig.savefig(f'heatmap_{method}.png')
+        fig.savefig(f'plots&data/heatmap_{method}.png')
     return heat_map
 
 
@@ -455,7 +458,6 @@ def create_antenna_array(dipole_number: int, dipole_spread: int, wavelength: flo
     min_x = center_x - ((dipole_number - 1) * dipole_spread) / 2
     max_x = center_x + ((dipole_number - 1) * dipole_spread) / 2
     for x in np.linspace(min_x, max_x, dipole_number):
-        print(x)
         dipoles.append(RxDipole(Position(x, center_y), Signal(0, 0, frequency)))
     return RxAntennaArray(dipoles)
 

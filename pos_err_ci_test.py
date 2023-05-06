@@ -17,7 +17,7 @@ ph_inc = [
 
 alpha = 0.05
 
-data = pd.read_csv(f'pos_err.csv', delimiter=';')
+data = pd.read_csv('plots&data/pos_err.csv', delimiter=';')
 
 data = data.drop('rng_run', axis=1)
 data = data.mask(data.eq('None')).dropna()
@@ -46,4 +46,4 @@ for mt in methods:
         ax.plot(plot_data.index*100, plot_data['pos_err'])
         ax.fill_between(plot_data.index*100, ci_min, ci_max, alpha=0.2)
         ax.set_ylim(bottom=0, top=1.1*max(plot_data['pos_err']))
-        fig.savefig(f'{mt}{"_pi" if pi else ""}.png')
+        fig.savefig(f'plots&data/{mt}{"_pi" if pi else ""}.svg')

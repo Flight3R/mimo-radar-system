@@ -44,9 +44,9 @@ obj_position = Position(5, -30)
 for output in glob.glob(f"{os.getcwd()}/*.csv"):
     os.remove(output)
 
-with open("pos_err_normal.csv", "a") as myfile:
+with open("plots&data/pos_err_normal.csv", "a") as myfile:
     myfile.write("rng_run;method;phase_err;pos_err\n")
-with open("pos_err_phinc.csv", "a") as myfile:
+with open("plots&data/pos_err_phinc.csv", "a") as myfile:
     myfile.write("rng_run;method;phase_err;pos_err\n")
 
 
@@ -79,7 +79,7 @@ for rng_run in range(3):
                 target_position = detection_method(antennas, tx, obj_position, plot=False)
                 pos_err = calculate_distance(target_position, obj_position)
                 # if pos_err is not None:
-                with open("pos_err_normal.csv", "a") as myfile:
+                with open("plots&data/pos_err_normal.csv", "a") as myfile:
                     myfile.write(f"{rng_run};{methods[mt]};{phase_err};{pos_err}\n")
 
         if True:
@@ -87,5 +87,5 @@ for rng_run in range(3):
                 target_position = detect_object_phase_increment(methods[mt], antennas, tx, object, phase_error_coef, plot=False)
                 pos_err = calculate_distance(target_position, obj_position)
                 # if pos_err is not None:
-                with open("pos_err_phinc.csv", "a") as myfile:
+                with open("plots&data/pos_err_phinc.csv", "a") as myfile:
                     myfile.write(f"{rng_run};{methods[mt]};{phase_err};{pos_err}\n")

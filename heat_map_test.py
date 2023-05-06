@@ -46,7 +46,7 @@ tx = TxDipole(Position(15, 10), Signal(phase=0, power=100, frequency=frequency))
 
 # fig, ax = plt.subplots()
 # plot_scenario(ax, antennas, tx, None)
-# fig.savefig("scenario.png")
+# fig.savefig("plots&data/scenario.png")
 
 methods = [
     'analytic',
