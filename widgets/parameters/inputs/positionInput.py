@@ -2,10 +2,10 @@ from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QWidget, QSpinBox, QLabel, QHBoxLayout
 
 from globalDef import global_big_spacing, sandbox_size
-from dto.coordinates import Coordinates
+from dto.position import Position
 
 
-class CoordinateInput(QWidget):
+class PositionInput(QWidget):
     value_changed = pyqtSignal()
 
     def __init__(self, x_min=-sandbox_size, x_max=sandbox_size, y_min=-sandbox_size, y_max=sandbox_size, x_init=0, y_init=0, parent=None):
@@ -42,8 +42,8 @@ class CoordinateInput(QWidget):
     def get_value(self):
         x = self.x_spin.value()
         y = self.y_spin.value()
-        return Coordinates(x, y)
+        return Position(x, y)
 
-    def set_value(self, coordinates):
-        self.x_spin.setValue(coordinates.x)
-        self.y_spin.setValue(coordinates.y)
+    def set_value(self, position):
+        self.x_spin.setValue(position.x)
+        self.y_spin.setValue(position.y)

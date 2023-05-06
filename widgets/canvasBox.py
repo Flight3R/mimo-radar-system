@@ -16,6 +16,7 @@ class CanvasBox(QGroupBox):
         self.scene.setSceneRect(-sandbox_size, -sandbox_size, 2*sandbox_size, 2*sandbox_size)
 
         self.view = GraphicsView(self.scene)
+        self.view.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
 
         layout = QVBoxLayout()
         layout.addWidget(self.view)
@@ -25,17 +26,17 @@ class CanvasBox(QGroupBox):
     def repaint_canvas(self, object, antennas, transmitters, settings):
         self.scene.clear()
 
-        object_item = PointItem(object.index, object.coordinates, object.name,
+        object_item = PointItem(object.index, object.position, object.name,
                                 settings.show_names, self.item_moved, QColorConstants.Red)
         self.scene.addItem(object_item)
 
         for antenna in antennas:
-            antenna_item = PointItem(antenna.index, antenna.coordinates, antenna.name,
+            antenna_item = PointItem(antenna.index, antenna.position, antenna.name,
                                      settings.show_names, self.item_moved, QColorConstants.Blue)
             self.scene.addItem(antenna_item)
 
         for transmitter in transmitters:
-            transmitter_item = PointItem(transmitter.index, transmitter.coordinates, transmitter.name,
+            transmitter_item = PointItem(transmitter.index, transmitter.position, transmitter.name,
                                          settings.show_names, self.item_moved, QColorConstants.Green)
             self.scene.addItem(transmitter_item)
 

@@ -1,10 +1,13 @@
+import math
+
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QScrollArea, QLineEdit
 
 from globalDef import global_small_spacing, global_big_spacing
 from dto.transmitter import Transmitter
-from widgets.parameters.inputs.coordinateInput import CoordinateInput
-from widgets.parameters.inputs.keyValueInput import KeyValueInput
+from widgets.parameters.inputs.positionInput import PositionInput
+from widgets.parameters.inputs.floatValueInput import FloatValueInput
+from widgets.parameters.inputs.valueInput import ValueInput
 
 
 class TransmittersList(QWidget):
@@ -64,13 +67,17 @@ class TransmittersList(QWidget):
         vbox.addWidget(labelWidget)
 
         # other parameters
-        dipole_number = KeyValueInput("Power", min_val=0, max_val=100, init_val=20)
+        dipole_number = FloatValueInput("Phase", min_val=0, max_val=2*math.pi, init_val=0)
         dipole_number.value_changed.connect(self.value_changed)
         vbox.addWidget(dipole_number)
 
-        coordinates = CoordinateInput()
-        coordinates.value_changed.connect(self.value_changed)
-        vbox.addWidget(coordinates)
+        dipole_number = FloatValueInput("Power", min_val=0, max_val=float("inf"), init_val=10)
+        dipole_number.value_changed.connect(self.value_changed)
+        vbox.addWidget(dipole_number)
+
+        position = PositionInput()
+        position.value_changed.connect(self.value_changed)
+        vbox.addWidget(position)
 
 
         vbox.addStretch()
@@ -94,17 +101,18 @@ class TransmittersList(QWidget):
         for item in self.items:
             index = item.layout().itemAt(0).widget().text()
             name = item.layout().itemAt(1).widget().layout().itemAt(0).widget().text()
-            power = item.layout().itemAt(2).widget().get_value()
-            coordinate = item.layout().itemAt(3).widget().get_value()
+            phase = item.layout().itemAt(2).widget().get_value()
+            power = item.layout().itemAt(3).widget().get_value()
+            position = item.layout().itemAt(4).widget().get_value()
 
-            transmitters.append(Transmitter(index, name, coordinate, power))
+            transmitters.append(Transmitter(index, name, position, phase, power))
 
         return transmitters
 
-    def update_coordinates(self, index, coordinates):
+    def update_position(self, index, position):
         filtered = list(filter(lambda item: item.layout().itemAt(0).widget().text() == index, self.items))
         assert len(filtered) == 1
 
-        filtered[0].layout().itemAt(3).widget().set_value(coordinates)
+        filtered[0].layout().itemAt(4).widget().set_value(position)
 
 

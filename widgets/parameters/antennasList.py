@@ -3,8 +3,9 @@ from PyQt6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QScr
 
 from globalDef import global_small_spacing, global_big_spacing
 from dto.antenna import Antenna
-from widgets.parameters.inputs.coordinateInput import CoordinateInput
-from widgets.parameters.inputs.keyValueInput import KeyValueInput
+from widgets.parameters.inputs.positionInput import PositionInput
+from widgets.parameters.inputs.floatValueInput import FloatValueInput
+from widgets.parameters.inputs.valueInput import ValueInput
 
 
 class AntennasList(QWidget):
@@ -64,17 +65,17 @@ class AntennasList(QWidget):
         vbox.addWidget(labelWidget)
 
         # other parameters
-        dipole_number = KeyValueInput("Dipole number", min_val=0, max_val=4, init_val=2)
+        dipole_number = ValueInput("Dipole number", min_val=1, max_val=10, init_val=2)
         dipole_number.value_changed.connect(self.value_changed)
         vbox.addWidget(dipole_number)
 
-        dipole_spread = KeyValueInput("Dipole spread", min_val=0, max_val=5, init_val=1)
+        dipole_spread = FloatValueInput("Dipole spread", min_val=0.01, max_val=float("inf"), init_val=1, step=0.1)
         dipole_spread.value_changed.connect(self.value_changed)
         vbox.addWidget(dipole_spread)
 
-        coordinates = CoordinateInput()
-        coordinates.value_changed.connect(self.value_changed)
-        vbox.addWidget(coordinates)
+        position = PositionInput()
+        position.value_changed.connect(self.value_changed)
+        vbox.addWidget(position)
 
 
         vbox.addStretch()
@@ -100,17 +101,17 @@ class AntennasList(QWidget):
             name = item.layout().itemAt(1).widget().layout().itemAt(0).widget().text()
             dipole_number = item.layout().itemAt(2).widget().get_value()
             dipole_distance = item.layout().itemAt(3).widget().get_value()
-            coordinate = item.layout().itemAt(4).widget().get_value()
+            position = item.layout().itemAt(4).widget().get_value()
 
-            antennas.append(Antenna(index, name, coordinate, dipole_number, dipole_distance))
+            antennas.append(Antenna(index, name, position, dipole_number, dipole_distance))
 
         return antennas
 
-    def update_coordinates(self, index, coordinates):
+    def update_position(self, index, position):
         filtered = list(filter(lambda item: item.layout().itemAt(0).widget().text() == index, self.items))
         assert len(filtered) == 1
 
-        filtered[0].layout().itemAt(4).widget().set_value(coordinates)
+        filtered[0].layout().itemAt(4).widget().set_value(position)
 
 
 

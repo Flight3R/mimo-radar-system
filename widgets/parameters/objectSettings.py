@@ -3,8 +3,8 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLineEdit
 
 from globalDef import global_small_spacing
 from dto.object import Object
-from widgets.parameters.inputs.coordinateInput import CoordinateInput
-from widgets.parameters.inputs.keyValueInput import KeyValueInput
+from widgets.parameters.inputs.positionInput import PositionInput
+from widgets.parameters.inputs.valueInput import ValueInput
 
 
 class ObjectSettings(QWidget):
@@ -19,11 +19,11 @@ class ObjectSettings(QWidget):
         self.label.textChanged.connect(self.value_changed)
         layout.addWidget(self.label)
 
-        self.coordinate_input = CoordinateInput()
-        self.coordinate_input.value_changed.connect(self.value_changed)
-        layout.addWidget(self.coordinate_input)
+        self.position_input = PositionInput()
+        self.position_input.value_changed.connect(self.value_changed)
+        layout.addWidget(self.position_input)
 
-        self.reflection_input = KeyValueInput("Reflection coefficient")
+        self.reflection_input = ValueInput("Reflection coefficient")
         self.reflection_input.value_changed.connect(self.value_changed)
         layout.addWidget(self.reflection_input)
 
@@ -31,10 +31,10 @@ class ObjectSettings(QWidget):
 
     def get_object(self):
         name = self.label.text()
-        coordinates = self.coordinate_input.get_value()
+        position = self.position_input.get_value()
         reflection = self.reflection_input.get_value()
 
-        return Object("object", name, coordinates, reflection)
+        return Object("object", name, position, reflection)
 
-    def update_coordinates(self, coordinates):
-        self.coordinate_input.set_value(coordinates)
+    def update_position(self, position):
+        self.position_input.set_value(position)

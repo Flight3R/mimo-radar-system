@@ -4,6 +4,28 @@ import time
 
 from definitions import *
 
+def create_antenna_array(dipole_number: int, dipole_spread: int, wavelength: float,
+                         center_position: Position) -> RxAntennaArray:
+    dipoles = []
+    frequency = SPEED_OF_LIGHT / wavelength
+    center_x, center_y = center_position.x, center_position.y
+    min_x = center_x - ((dipole_number - 1) * dipole_spread) / 2
+    max_x = center_x + ((dipole_number - 1) * dipole_spread) / 2
+    for x in np.linspace(min_x, max_x, dipole_number):
+        print(x)
+        dipoles.append(RxDipole(Position(x, center_y), Signal(0, 0, frequency)))
+    return RxAntennaArray(dipoles)
+
+
+def create_transmitter(positon: Position, phase_offset: float, wavelength: float) -> TxDipole:
+    frequency = SPEED_OF_LIGHT / wavelength
+    return TxDipole(positon, Signal(phase=phase_offset, power=0, frequency=frequency))
+
+
+def create_object(positon: Position) -> TxDipole:
+    return TxDipole(positon, is_reflector=True)
+
+
 # all lengths are in meters
 # all time in seconds
 # all angles in radians if not specified otherwise
@@ -12,7 +34,7 @@ from definitions import *
 #############################################################
 #                       INITIALIZATION
 #############################################################
-wavelength = 2
+wavelength = 2 #todo dodać do wprowadzania
 dipole_spread = 1
 antenna_spread = 15
 
@@ -89,3 +111,12 @@ if True:
         else:
             print(f"{'target_position=' : <20}{'Not found'}")
         print(f"{'time=' : <20}{end - start :.5}")
+
+
+def detect_object(method: str, phase_increment: bool, antennas: list, tx: TxDipole, object: TxDipole, phase_error_coef=0.0) -> Position:
+    if phase_increment:
+        return detect_object_phase_increment(method, antennas, tx, object, phase_error_coef)
+    else:
+        simulate(antennas, tx, object, phase_error_coef)
+        detection_method = select_detection_method(method)
+        return detection_method(antennas, tx, object.position)

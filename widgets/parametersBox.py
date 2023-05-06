@@ -36,11 +36,11 @@ class ParametersBox(QGroupBox):
 
         return object, antennas, transmitters
 
-    def update_position(self, index, coordinates):
+    def update_position(self, index, position):
         if "object" in index:
-            self.object_settings.update_coordinates(coordinates)
+            self.object_settings.update_position(position)
         elif "antenna" in index:
-            self.antennas_list.update_coordinates(index, coordinates)
+            self.antennas_list.update_position(index, position)
         elif "transmitter" in index:
-            self.transmitters_list.update_coordinates(index, coordinates)
+            self.transmitters_list.update_position(index, position)
 
