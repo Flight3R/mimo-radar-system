@@ -40,15 +40,8 @@ tx = TxDipole(Position(15, 10), Signal(phase=3, power=400, frequency=frequency))
 # measured object x,y center
 obj_position = Position(5, -30)
 
-
-for output in glob.glob(f"{os.getcwd()}/*.csv") + glob.glob(f"{os.getcwd()}/*.png"):
-    os.remove(output)
-
-with open("pos_err_normal.csv", "a") as myfile:
-    myfile.write("rng_run;method;phase_err;pos_err\n")
-with open("pos_err_phinc.csv", "a") as myfile:
-    myfile.write("rng_run;method;phase_err;pos_err\n")
-
+with open("pos_err.csv", "w") as myfile:
+    myfile.write("rng_run;method;phase_increment;phase_err;pos_err\n")
 
 for rng_run in range(200, 210):
     random.seed(rng_run)
@@ -72,19 +65,14 @@ for rng_run in range(200, 210):
             'variance'
         ]
 
-        if True:
-            for method in methods:
-                detection_method = select_detection_method(method)
-                target_position = detection_method(antennas, tx, obj_position, plot=False)
-                pos_err = calculate_distance(target_position, obj_position)
-                # if pos_err is not None:
-                with open("pos_err_normal.csv", "a") as myfile:
-                    myfile.write(f"{rng_run};{method};{phase_err};{pos_err}\n")
+        for method in methods:
+            detection_method = select_detection_method(method)
+            target_position = detection_method(antennas, tx, obj_position, plot=False)
+            pos_err = calculate_distance(target_position, obj_position)
+            with open("pos_err.csv", "a") as myfile:
+                myfile.write(f"{rng_run};{method};{False};{phase_err};{pos_err}\n")
 
-        if True:
-            for method in methods:
-                target_position = detect_object_phase_increment(method, antennas, tx, object, phase_error_coef, plot=False)
-                pos_err = calculate_distance(target_position, obj_position)
-                # if pos_err is not None:
-                with open("pos_err_phinc.csv", "a") as myfile:
-                    myfile.write(f"{rng_run};{method};{phase_err};{pos_err}\n")
+            target_position = detect_object_phase_increment(method, antennas, tx, object, phase_error_coef, plot=False)
+            pos_err = calculate_distance(target_position, obj_position)
+            with open("pos_err.csv", "a") as myfile:
+                myfile.write(f"{rng_run};{method};{True};{phase_err};{pos_err}\n")
