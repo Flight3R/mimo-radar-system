@@ -7,7 +7,7 @@ from globalDef import global_small_spacing
 class FloatValueInput(QWidget):
     value_changed = pyqtSignal()
 
-    def __init__(self, key, min_val=-100, max_val=100, init_val=0, step=0.1, parent=None):
+    def __init__(self, name, min_val=-100, max_val=100, init_val=0, step=0.1, parent=None):
         super().__init__(parent)
 
         self.spin = QDoubleSpinBox(self)
@@ -16,7 +16,7 @@ class FloatValueInput(QWidget):
         self.spin.setSingleStep(step)
         self.spin.setValue(init_val)
 
-        label = QLabel(key + ':', self)
+        label = QLabel(name + ':', self)
 
         hbox = QHBoxLayout()
         hbox.setContentsMargins(0, 0, 0, 0)

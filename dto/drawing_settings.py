@@ -1,4 +1,4 @@
-class Settings:
+class DrawingSettings:
     def __init__(self, show_names, show_circles, show_lines, show_real_object, show_detected_object):
         self.show_names = show_names
         self.show_circles = show_circles

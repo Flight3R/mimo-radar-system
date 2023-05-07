@@ -1,7 +1,5 @@
 from PyQt6.QtCore import pyqtSignal
-from PyQt6.QtWidgets import QWidget, QSpinBox, QLabel, QHBoxLayout, QVBoxLayout
-
-from globalDef import global_small_spacing
+from PyQt6.QtWidgets import QWidget, QSpinBox, QLabel, QHBoxLayout
 
 
 class ValueInput(QWidget):

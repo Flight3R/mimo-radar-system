@@ -1,16 +1,17 @@
-from PyQt6.QtCore import pyqtSignal
-from PyQt6.QtWidgets import QGroupBox, QVBoxLayout, QPushButton, QHBoxLayout
+from PyQt6.QtCore import pyqtSignal, Qt
+from PyQt6.QtWidgets import QGroupBox, QVBoxLayout
 
-from widgets.parameters.antennasList import AntennasList
-from widgets.parameters.objectSettings import ObjectSettings
-from widgets.parameters.transmittersList import TransmittersList
+from widgets.left_panel.antennas_list import AntennasList
+from widgets.left_panel.object_settings import ObjectSettings
+from widgets.left_panel.transmitters_list import TransmittersList
 
 
-class ParametersBox(QGroupBox):
+class LeftPanel(QGroupBox):
     value_changed = pyqtSignal()
 
     def __init__(self):
-        super(ParametersBox, self).__init__("Parameters")
+        super(LeftPanel, self).__init__("Objects")
+        self.setMinimumWidth(300)
         self.setMaximumWidth(400)
 
         vbox = QVBoxLayout()

@@ -1,14 +1,15 @@
+import math
+
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QScrollArea, QLineEdit
 
+from dto.transmitter import Transmitter
 from globalDef import global_small_spacing, global_big_spacing
-from dto.antenna import Antenna
-from widgets.parameters.inputs.positionInput import PositionInput
-from widgets.parameters.inputs.floatValueInput import FloatValueInput
-from widgets.parameters.inputs.valueInput import ValueInput
+from widgets.inputs.float_value_input import FloatValueInput
+from widgets.inputs.position_input import PositionInput
 
 
-class AntennasList(QWidget):
+class TransmittersList(QWidget):
     value_changed = pyqtSignal()
 
     def __init__(self, parent=None):
@@ -18,7 +19,7 @@ class AntennasList(QWidget):
         self.items = []
 
         self.vbox = QVBoxLayout()
-        self.add_button = QPushButton('Add antenna')
+        self.add_button = QPushButton('Add transmitter')
         self.add_button.clicked.connect(self.add_item)
 
         hbox = QHBoxLayout()
@@ -39,14 +40,19 @@ class AntennasList(QWidget):
         main_vbox = QVBoxLayout(self)
         main_vbox.addWidget(scroll_area)
 
-    def add_item(self):
-        name = 'Antenna {}'.format(self.items_counter)
+        self.add_item(x_init=-50, y_init=-50)
+
+    def add_item(self, dipole_number_init=0, x_init=0, y_init=0):
+        if self.number_of_items() >= 1:
+            return
+
+        name = 'Transmitter {}'.format(self.items_counter)
 
         item = QWidget(self)
         vbox = QVBoxLayout()
         vbox.setSpacing(0)
 
-        index = QLineEdit("antenna_" + str(self.items_counter))
+        index = QLineEdit("transmitter_" + str(self.items_counter))
         index.setVisible(False)
         vbox.addWidget(index)
 
@@ -65,18 +71,13 @@ class AntennasList(QWidget):
         vbox.addWidget(labelWidget)
 
         # other parameters
-        dipole_number = ValueInput("Dipole number", min_val=1, max_val=10, init_val=2)
+        dipole_number = FloatValueInput("Phase", min_val=0, max_val=2 * math.pi, init_val=dipole_number_init)
         dipole_number.value_changed.connect(self.value_changed)
         vbox.addWidget(dipole_number)
 
-        dipole_spread = FloatValueInput("Dipole spread", min_val=0.01, max_val=float("inf"), init_val=1, step=0.1)
-        dipole_spread.value_changed.connect(self.value_changed)
-        vbox.addWidget(dipole_spread)
-
-        position = PositionInput()
+        position = PositionInput(x_init=x_init, y_init=y_init)
         position.value_changed.connect(self.value_changed)
         vbox.addWidget(position)
-
 
         vbox.addStretch()
         vbox.setSpacing(global_small_spacing)
@@ -88,31 +89,31 @@ class AntennasList(QWidget):
         self.value_changed.emit()
 
     def remove_item(self, item):
+        if self.number_of_items() <= 1:
+            return
+
         self.vbox.removeWidget(item)
         item.deleteLater()
         self.items.remove(item)
         self.value_changed.emit()
 
-
     def get_items(self):
-        antennas = []
+        transmitters = []
         for item in self.items:
             index = item.layout().itemAt(0).widget().text()
             name = item.layout().itemAt(1).widget().layout().itemAt(0).widget().text()
-            dipole_number = item.layout().itemAt(2).widget().get_value()
-            dipole_distance = item.layout().itemAt(3).widget().get_value()
-            position = item.layout().itemAt(4).widget().get_value()
+            phase = item.layout().itemAt(2).widget().get_value()
+            position = item.layout().itemAt(3).widget().get_value()
 
-            antennas.append(Antenna(index, name, position, dipole_number, dipole_distance))
+            transmitters.append(Transmitter(index, name, position, phase))
 
-        return antennas
+        return transmitters
 
     def update_position(self, index, position):
         filtered = list(filter(lambda item: item.layout().itemAt(0).widget().text() == index, self.items))
         assert len(filtered) == 1
 
-        filtered[0].layout().itemAt(4).widget().set_value(position)
+        filtered[0].layout().itemAt(3).widget().set_value(position)
 
-
-
-
+    def number_of_items(self):
+        return len(self.items)

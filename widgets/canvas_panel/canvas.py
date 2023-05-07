@@ -7,7 +7,7 @@ from globalDef import sandbox_size
 font = QFont("Arial", 10)
 
 
-class GraphicsView(QGraphicsView):
+class Canvas(QGraphicsView):
     settings = True
 
     def __init__(self, parent=None):

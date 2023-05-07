@@ -2,7 +2,7 @@ from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QWidget, QSpinBox, QLabel, QHBoxLayout
 
 from globalDef import global_big_spacing, sandbox_size
-from dto.position import Position
+from dto.position import PositionDto
 
 
 class PositionInput(QWidget):
@@ -42,7 +42,7 @@ class PositionInput(QWidget):
     def get_value(self):
         x = self.x_spin.value()
         y = self.y_spin.value()
-        return Position(x, y)
+        return PositionDto(x, y)
 
     def set_value(self, position):
         self.x_spin.setValue(position.x)

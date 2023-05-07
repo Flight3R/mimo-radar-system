@@ -6,6 +6,7 @@ import itertools as it
 import statistics as stat
 import random
 
+
 SPEED_OF_LIGHT = 299792458
 
 
@@ -19,7 +20,7 @@ def calculate_crossing_of_lines(line_parameters1: list, line_parameters2: list) 
         x = (intercept1 - intercept2) / (slope2 - slope1)
         y = slope1 * x + intercept1
         return Position(x, y)
-    except ValueError:
+    except ValueError as e:
         return None
 
 
@@ -51,7 +52,7 @@ def calculate_line(point_A: Position, point_B: Position) -> tuple:
         slope = (point_A.y - point_B.y) / (point_A.x - point_B.x)
         intercept = calculate_intercept(point_A, slope)
         return slope, intercept
-    except ValueError:
+    except ValueError as e:
         return None
 
 
@@ -59,15 +60,15 @@ def calculate_angle(position1: Position, position2: Position) -> float:
     try:
         dx = position2.x - position1.x
         dy = position2.y - position1.y
-        angle = math.atan(abs(dy / dx))
+        angle = math.atan(abs(dy/dx))
         if dx > 0 and dy > 0:
             return angle
         if dx > 0 and dy < 0:
-            return 2 * math.pi - angle
+            return 2*math.pi - angle
         if dx < 0 and dy > 0:
             return math.pi - angle
         return math.pi + angle
-    except ValueError:
+    except ValueError as e:
         return None
 
 
@@ -75,7 +76,7 @@ def calculate_deg_angle(position1: Position, position2: Position) -> float:
     try:
         slope, _ = calculate_line(position1, position2)
         return slope * 360 / (2 * math.pi)
-    except ValueError:
+    except ValueError as e:
         return None
 
 
@@ -94,10 +95,9 @@ def calculate_phase(frequency: float, theha_zero: float, distance: float) -> flo
 def calculate_distance(position1: Position, position2: Position) -> float:
     try:
         return math.sqrt(math.pow(position1.x - position2.x, 2)
-                         + math.pow(position1.y - position2.y, 2))
-    except AttributeError:
+                            + math.pow(position1.y - position2.y, 2))
+    except AttributeError as e:
         return None
-
 
 def generate_pairs(array: list) -> list:
     return list(it.combinations(array, 2))
@@ -108,10 +108,10 @@ def get_intersections(pair: tuple) -> tuple:
         x0, y0, r0 = pair[0]
         x1, y1, r1 = pair[1]
 
-        d = math.sqrt(math.pow(x1 - x0, 2) + math.pow(y1 - y0, 2))
+        d=math.sqrt(math.pow(x1 - x0, 2) + math.pow(y1 - y0, 2))
 
         # non intersecting
-        if d > r0 + r1:
+        if d > r0 + r1 :
             return None
         # One circle within other
         if d < abs(r0 - r1):
@@ -129,13 +129,12 @@ def get_intersections(pair: tuple) -> tuple:
             x4 = x2 - h * (y1 - y0) / d
             y4 = y2 + h * (x1 - x0) / d
             return x3, y3, x4, y4
-    except ValueError:
+    except ValueError as e:
         return None
-
 
 def plot_point(ax: plt.Axes, position: Position, color='blue', marker='o'):
     if position is not None:
-        ax.plot(position.x, position.y, color=color, marker=marker, )
+        ax.plot(position.x, position.y, color=color, marker=marker)
 
 
 def plot_antenna(ax: plt.Axes, antenna: Dipole, color: str):
@@ -149,8 +148,8 @@ def plot_line_between(ax: plt.Axes, position1: Position, position2: Position, co
 
 def plot_regression_line(ax: plt.Axes, start_point: Position, slope: float, length: float, down=False):
     dy = math.sqrt(math.pow(length, 2)
-                   * math.pow(slope, 2)
-                   / (1 + math.pow(slope, 2)))
+                        * math.pow(slope, 2)
+                        / (1 + math.pow(slope, 2)))
     if down:
         dy = -dy
     y1 = start_point.y + dy
@@ -182,23 +181,23 @@ def wrap_phase(phase: float) -> float:
 
 def get_quater_of_object_relative_to_antenna(antenna: RxAntennaArray, obj_position: Position) -> int:
     angle = calculate_angle(antenna.antenna_center, obj_position)
-    if 0 < angle and angle < math.pi / 2:
+    if 0 < angle and angle < math.pi/2:
         return 1
-    if math.pi / 2 < angle and angle < math.pi:
+    if math.pi/2 < angle and angle < math.pi:
         return 2
-    if math.pi < angle and angle < 3 / 2 * math.pi:
+    if math.pi < angle and angle < 3/2 * math.pi:
         return 3
     return 4
 
 
-def detect_object_using_antenna_set_variance(antennas: list, tx=None, obj_position=None, plot=False) -> Position:
+def detect_object_using_antenna_set_variance(antennas: list, tx: TxDipole, obj_position: Position, plot=False) -> Position:
     if plot:
         fig, ax = plt.subplots()
         ax.set_aspect('equal')
         plot_scenario(ax, antennas, tx, obj_position)
     target_position = None
     angle = np.linspace(0, 2 * np.pi, 150)
-    how_many_circles = 40
+    how_many_circles = 100
     for antenna in antennas:
         dipole_distance_variance = calculate_figure_center_variance(
             [antenna.dipoles[0].position, antenna.dipoles[-1].position])
@@ -211,11 +210,11 @@ def detect_object_using_antenna_set_variance(antennas: list, tx=None, obj_positi
             for dipole in antenna.dipoles:
                 signal = dipole.get_normalized_signal()
                 delta_wavelength = (signal.phase / (2 * math.pi)) * signal.getWavelangth()
-                radius = delta_wavelength + (i + 1) * signal.getWavelangth()
+                radius = delta_wavelength + (i + 1)  * signal.getWavelangth()
                 circles.append([dipole.position.x, dipole.position.y, radius])
                 if plot:
-                    x = radius * np.cos(angle) + dipole.position.x
-                    y = radius * np.sin(angle) + dipole.position.y
+                    x =  radius * np.cos(angle) + dipole.position.x
+                    y =  radius * np.sin(angle) + dipole.position.y
                     ax.plot(x, y, color='gray')
 
             cross_points_of_circles = []
@@ -256,12 +255,12 @@ def detect_object_using_antenna_set_variance(antennas: list, tx=None, obj_positi
 
     if plot and target_position is not None:
         plot_point(ax, target_position, 'magenta', '*')
-        plt.savefig('radar_output_variance.png')
+        plt.savefig('plots&data/radar_output_variance.png')
 
     return target_position
 
 
-def detect_object_using_antenna_set_analytic(antennas: list, tx=None, obj_position=None, plot=False) -> Position:
+def detect_object_using_antenna_set_analytic(antennas: list, tx: TxDipole, obj_position: Position, plot=False) -> Position:
     if plot:
         fig, ax = plt.subplots()
         ax.set_aspect('equal')
@@ -284,24 +283,25 @@ def detect_object_using_antenna_set_analytic(antennas: list, tx=None, obj_positi
         if plot:
             plot_regression_line(ax, antenna.antenna_center, slope, 13, down)
 
+
     # calculate position of object basing on analytic solution
     line_parameters1, line_parameters2 = regression_lines_analytic
     target_position = calculate_crossing_of_lines(line_parameters1,
                                                   line_parameters2)
     if plot:
         plot_point(ax, target_position, 'magenta', '*')
-        plt.savefig('radar_output_analytic.png')
+        plt.savefig('plots&data/radar_output_analytic.png')
     return target_position
 
 
-def detect_object_using_antenna_set_regression(antennas: list, tx=None, obj_position=None, plot=False) -> Position:
+def detect_object_using_antenna_set_regression(antennas: list, tx: TxDipole, obj_position: Position, plot=False) -> Position:
     target_position = None
     if plot:
         fig, ax = plt.subplots()
         ax.set_aspect('equal')
         plot_scenario(ax, antennas, tx, obj_position)
     angle = np.linspace(0, 2 * np.pi, 150)
-    how_many_circles = 13
+    how_many_circles = 100
     regression_lines = []
     for antenna in antennas:
         breaked = False
@@ -315,11 +315,11 @@ def detect_object_using_antenna_set_regression(antennas: list, tx=None, obj_posi
             for dipole in antenna.dipoles:
                 signal = dipole.get_normalized_signal()
                 delta_wavelength = (signal.phase / (2 * math.pi)) * signal.getWavelangth()
-                radius = delta_wavelength + (i + 1) * signal.getWavelangth()
+                radius = delta_wavelength + (i + 1)  * signal.getWavelangth()
                 circles.append([dipole.position.x, dipole.position.y, radius])
                 if plot:
-                    x = radius * np.cos(angle) + dipole.position.x
-                    y = radius * np.sin(angle) + dipole.position.y
+                    x =  radius * np.cos(angle) + dipole.position.x
+                    y =  radius * np.sin(angle) + dipole.position.y
                     ax.plot(x, y, color='gray')
 
             cross_points_of_current_circles = []
@@ -342,7 +342,8 @@ def detect_object_using_antenna_set_regression(antennas: list, tx=None, obj_posi
                         plot_point(ax, point, marker='.')
             try:
                 current_variance = calculate_figure_center_variance(cross_points_of_current_circles)
-            except stat.StatisticsError:
+            except stat.StatisticsError as e:
+                print(e) if plot else None
                 return None
             if current_variance > dipole_distance_variance:
                 breaked = True
@@ -359,12 +360,13 @@ def detect_object_using_antenna_set_regression(antennas: list, tx=None, obj_posi
     # calculate position of object basing on linear regressions
     try:
         line_parameters1, line_parameters2 = regression_lines
-    except ValueError:
+    except ValueError as e:
+        print(e) if plot else None
         return None
     target_position = calculate_crossing_of_lines(line_parameters1, line_parameters2)
     if plot:
         plot_point(ax, target_position, 'magenta', '*')
-        plt.savefig('radar_output_regression.png')
+        plt.savefig('plots&data/radar_output_regression.png')
     return target_position
 
 
@@ -376,13 +378,13 @@ def simulate(antennas: list, tx: TxDipole, object: TxDipole, phase_error_coef=0.
 
 
 def guess_target_position(found_positions: list[Position]) -> Position:
-    found_coords = np.array([[pos.x, pos.y] for pos in found_positions])
+    found_coords= np.array([[pos.x, pos.y] for pos in found_positions])
     x_rsm = np.mean(found_coords[:, 0])
     y_rsm = np.mean(found_coords[:, 1])
     return Position(x_rsm, y_rsm)
 
 
-def select_detection_method(method: str) -> function:
+def select_detection_method(method: str):
     detection_function = None
     match method:
         case "analytic":
@@ -394,20 +396,19 @@ def select_detection_method(method: str) -> function:
     return detection_function
 
 
-def detect_object_phase_increment(method: str, antennas: list, tx: TxDipole, object: TxDipole, phase_error_coef=0.0,
-                                  plot=False) -> Position:
-    detection_function = select_detection_method(method)
+def detect_object_phase_increment(method, antennas: list, tx: TxDipole, object: TxDipole, phase_error_coef=0.0, plot=False) -> Position:
     phases = np.linspace(0, 2 * np.pi, 10, endpoint=False)
     found_positions = []
     for phase in phases:
         tx.signal.setPhase(phase)
         simulate(antennas, tx, object, phase_error_coef)
-        target_position = detection_function(antennas, tx, object.position)
+        target_position = method(antennas, tx, object.position)
         if target_position is not None:
             found_positions.append(target_position)
     try:
         location_guess = guess_target_position(found_positions)
-    except IndexError:
+    except IndexError as e:
+        print(e) if plot else None
         return None
     if plot:
         fig, ax = plt.subplots()
@@ -416,19 +417,18 @@ def detect_object_phase_increment(method: str, antennas: list, tx: TxDipole, obj
             plot_point(ax, pos, 'magenta', '.')
         plot_point(ax, location_guess, marker='*')
         # plot_point(ax, object.position, marker='*', color='red')
-        plt.savefig(f"phase_increment_{method}.png")
+        plt.savefig(f"plots&data/phase_increment_{method}.png")
     return location_guess
 
 
-def create_heat_map(edge_length: float, resolution: float, method: str, antennas: list, tx: TxDipole,
-                    phase_error_coef=0.0, plot=False) -> np.ndarray:
+def create_heat_map(edge_length: float, resolution: float, method: str, antennas: list, tx: TxDipole, phase_error_coef=0.0, plot=False) -> np.ndarray:
     antennas_center = calculate_figure_center([ant.antenna_center for ant in antennas])
-    x_min = antennas_center.x - edge_length / 2
-    x_max = antennas_center.x + edge_length / 2
-    y_min = antennas_center.y - edge_length / 2
-    y_max = antennas_center.y + edge_length / 2
-    x_space = np.arange(x_min, x_max, 1 / resolution)
-    y_space = np.arange(y_min, y_max, 1 / resolution)
+    x_min = antennas_center.x - edge_length/2
+    x_max = antennas_center.x + edge_length/2
+    y_min = antennas_center.y - edge_length/2
+    y_max = antennas_center.y + edge_length/2
+    x_space = np.arange(x_min, x_max, 1/resolution)
+    y_space = np.arange(y_min, y_max, 1/resolution)
     heat_map = np.zeros((len(x_space), len(y_space)))
     for xi, x in enumerate(x_space):
         for yi, y in enumerate(y_space):
@@ -446,9 +446,17 @@ def create_heat_map(edge_length: float, resolution: float, method: str, antennas
         ax.set_title(f"Heatmap of {method} method\n{edge_length=}m, {resolution=}samples/square")
         cbar = fig.colorbar(mesh, ax=ax)
         cbar.set_label("Position error [m]")
-        fig.savefig(f'heatmap_{method}.png')
+        fig.savefig(f'plots&data/heatmap_{method}.png')
     return heat_map
 
+
+def detect_object(method: str, phase_increment: bool, antennas: list, tx: TxDipole, object: TxDipole, phase_error_coef=0.0) -> Position:
+    if phase_increment:
+        return detect_object_phase_increment(method, antennas, tx, object, phase_error_coef)
+    else:
+        simulate(antennas, tx, object, phase_error_coef)
+        detection_method = select_detection_method(method)
+        return detection_method(antennas, tx, object.position)
 
 
 #############################################################
@@ -469,7 +477,7 @@ class Position:
         slope, _ = calculate_line(self, target_position)
         delta_distance = speed * delta_time
         delta_x = math.sqrt(math.pow(delta_distance, 2)
-                            / (1 + math.pow(slope, 2)))
+                                / (1 + math.pow(slope, 2)))
         moving_left = target_position.x < self.x
         delta_x = -delta_x if moving_left else delta_x
         delta_y = slope * delta_x
@@ -484,7 +492,7 @@ class Signal():
         self.frequency = frequency
 
     def getWavelangth(self) -> float:
-        return SPEED_OF_LIGHT / self.frequency
+        return SPEED_OF_LIGHT/self.frequency
 
     def setPhase(self, phase: float):
         self.phase = wrap_phase(phase)
@@ -497,15 +505,15 @@ class Dipole:
 
 
 class TxDipole(Dipole):
-    def __init__(self, position: Position, signal=Signal(0, 0, 0), is_reflector=False):
+    def __init__(self, position: Position, signal=Signal(0,0,0), is_reflector=False):
         super().__init__(position, signal)
         self.is_reflector = is_reflector
-        if (is_reflector):
+        if(is_reflector):
             self.signal = Signal(0, 0, 0)
 
     def reflect_signal(self, txAnt: TxDipole):
         distance = calculate_distance(self.position, txAnt.position)
-        fsl = 0  # calculate_fsl(distance, txAnt.signal.frequency)
+        fsl = 0 #calculate_fsl(distance, txAnt.signal.frequency)
         rsl = txAnt.signal.power - fsl
         if (rsl > 0):
             phase = calculate_phase(txAnt.signal.frequency,
@@ -525,12 +533,12 @@ class RxDipole(Dipole):
     def recieve_signal(self, txAnt: TxDipole, phase_error_coef=0):
         if (txAnt.signal.power > 0):
             distance = calculate_distance(self.position, txAnt.position)
-            current_fsl = 0  # calculate_fsl(distance, txAnt.signal.frequency)
+            current_fsl = 0 #calculate_fsl(distance, txAnt.signal.frequency)
             current_rsl = txAnt.signal.power - current_fsl
             phase_error = random.uniform(-2 * math.pi, 2 * math.pi) * phase_error_coef
             if (current_rsl > 0):
                 self.signal.setPhase(calculate_phase(txAnt.signal.frequency, txAnt.signal.phase, distance)
-                                     + phase_error)
+                                        + phase_error)
                 self.signal.power = current_rsl
             else:
                 print("RSL=0")
@@ -539,8 +547,7 @@ class RxDipole(Dipole):
         if self.reference_signal.power > 0 and self.signal.power != self.reference_signal.power:
             print('ref signal!!!')
             phase = (self.signal.phase * self.signal.power
-                     - self.reference_signal.phase * self.reference_signal.power) / (
-                                self.signal.power - self.reference_signal.power)
+                        - self.reference_signal.phase * self.reference_signal.power) / (self.signal.power - self.reference_signal.power)
             power = self.signal.power - self.reference_signal.power
             return Signal(phase, power, self.signal.frequency)
         else:

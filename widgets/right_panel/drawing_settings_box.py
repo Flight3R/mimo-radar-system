@@ -1,22 +1,22 @@
 from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtWidgets import QGroupBox, QVBoxLayout, QCheckBox, QPushButton
+from PyQt6.QtWidgets import QGroupBox, QVBoxLayout, QCheckBox, QPushButton, QSizePolicy
 
-from dto.settings import Settings
+from dto.drawing_settings import DrawingSettings
 
 
-class DrawingSettings(QGroupBox):
+class DrawingSettingsBox(QGroupBox):
     settings_changed = pyqtSignal()
 
     def __init__(self):
-        super(DrawingSettings, self).__init__("Printing settings")
+        super(DrawingSettingsBox, self).__init__("Printing settings")
+        self.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed)
 
         vbox = QVBoxLayout()
-        vbox.setAlignment(Qt.AlignmentFlag.AlignVCenter)
         vbox.setSpacing(0)
-
 
         self.show_names = QCheckBox('Show names')
         self.show_names.stateChanged.connect(self.settings_changed)
+        self.show_names.setCheckState(Qt.CheckState.Checked)
         vbox.addWidget(self.show_names)
 
         self.show_circles = QCheckBox('Show circles')
@@ -44,4 +44,4 @@ class DrawingSettings(QGroupBox):
         show_real_object = self.show_real_object.checkState().value != 0
         show_detected_object = self.show_detected_object.checkState().value != 0
 
-        return Settings(show_names, show_circles, show_lines, show_real_object, show_detected_object)
+        return DrawingSettings(show_names, show_circles, show_lines, show_real_object, show_detected_object)

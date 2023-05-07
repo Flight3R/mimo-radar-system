@@ -2,12 +2,13 @@ from PyQt6.QtCore import QRectF
 from PyQt6.QtGui import QColorConstants, QPen, QColor, QBrush, QFontMetrics, QFont
 from PyQt6.QtWidgets import QGraphicsItem
 
-from dto.position import Position
+from dto.position import PositionDto
 
 
 class PointItem(QGraphicsItem):
     def __init__(self, index, position, name, show_name, item_moved_event, color=QColorConstants.Blue, size=14, parent=None):
         super().__init__(parent)
+
         self.index = index
         self.show_name = show_name
         self.size = size
@@ -43,7 +44,7 @@ class PointItem(QGraphicsItem):
             return QRectF(self.position.x - self.size / 2, self.position.y - self.size / 2, self.size, self.size)
 
     def get_position(self):
-        return Position(self.position.x + self.x(), self.position.y + self.y())
+        return PositionDto(self.position.x + self.x(), self.position.y + self.y())
 
     def mouseReleaseEvent(self, event):
         super().mouseReleaseEvent(event)
