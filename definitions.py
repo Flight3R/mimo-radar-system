@@ -197,7 +197,7 @@ def detect_object_using_antenna_set_variance(antennas: list, tx: TxDipole, obj_p
         plot_scenario(ax, antennas, tx, obj_position)
     target_position = None
     angle = np.linspace(0, 2 * np.pi, 150)
-    how_many_circles = 40
+    how_many_circles = 1000
     for antenna in antennas:
         dipole_distance_variance = calculate_figure_center_variance(
             [antenna.dipoles[0].position, antenna.dipoles[-1].position])
@@ -301,7 +301,7 @@ def detect_object_using_antenna_set_regression(antennas: list, tx: TxDipole, obj
         ax.set_aspect('equal')
         plot_scenario(ax, antennas, tx, obj_position)
     angle = np.linspace(0, 2 * np.pi, 150)
-    how_many_circles = 7
+    how_many_circles = 1000
     regression_lines = []
     for antenna in antennas:
         breaked = False
@@ -398,12 +398,12 @@ def select_detection_method(method: str) -> function:
 
 def detect_object_phase_increment(method: str, antennas: list, tx: TxDipole, object: TxDipole, phase_error_coef=0.0, plot=False) -> Position:
     detection_function = select_detection_method(method)
-    phases = np.linspace(0, 2 * np.pi, 10, endpoint=False)
+    phases = np.linspace(0, 2 * np.pi, 20, endpoint=False)
     found_positions = []
     for phase in phases:
         tx.signal.setPhase(phase)
         simulate(antennas, tx, object, phase_error_coef)
-        target_position = detection_function(antennas, tx, object.position)
+        target_position = detection_function(antennas, tx, object.position, plot=plot)
         if target_position is not None:
             found_positions.append(target_position)
     try:
@@ -473,7 +473,7 @@ def create_object(positon: Position) -> TxDipole:
 
 def detect_object(method: str, phase_increment: bool, antennas: list, tx: TxDipole, object: TxDipole, phase_error_coef=0.0) -> Position:
     if phase_increment:
-        return detect_object_phase_increment(method, antennas, tx, object, phase_error_coef)
+        return detect_object_phase_increment(method, antennas, tx, object, phase_error_coef, plot=False)
     else:
         simulate(antennas, tx, object, phase_error_coef)
         detection_method = select_detection_method(method)

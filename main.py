@@ -11,81 +11,39 @@ import time
 #############################################################
 #                       INITIALIZATION
 #############################################################
-wavelength = 2
-dipole_spread = 1
-antenna_spread = 15
+wavelength = 1
 
 frequency = SPEED_OF_LIGHT/wavelength
-dipoles1 = [
-    RxDipole(Position(-dipole_spread - antenna_spread / 2, 0), Signal(0, 0, frequency)),
-    RxDipole(Position(               - antenna_spread / 2, 0), Signal(0, 0, frequency)),
-    RxDipole(Position( dipole_spread - antenna_spread / 2, 0), Signal(0, 0, frequency))
-]
 
-dipoles2 = [
-    RxDipole(Position(-dipole_spread + antenna_spread / 2, 0), Signal(0, 0, frequency)),
-    RxDipole(Position(               + antenna_spread / 2, 0), Signal(0, 0, frequency)),
-    RxDipole(Position( dipole_spread + antenna_spread / 2, 0), Signal(0, 0, frequency))
-]
-
-
-antennas = [
-    RxAntennaArray(dipoles1),
-    RxAntennaArray(dipoles2)
-]
+antena1 = create_antenna_array(dipole_number=3, dipole_spread=wavelength, wavelength=wavelength, center_position=Position(-5, 0))
+print(antena1.dipoles[0].position)
+print(antena1.dipoles[1].position)
+print(antena1.dipoles[2].position)
+antena2 = create_antenna_array(dipole_number=3, dipole_spread=wavelength, wavelength=wavelength, center_position=Position(8, 0))
+antennas = [antena1, antena2]
 
 # transmitter antenna x,y center
-tx = TxDipole(Position(15, 10), Signal(phase=3, power=400, frequency=frequency))
+tx = TxDipole(Position(-10, 10), Signal(phase=0, power=1, frequency=frequency))
 
 # measured object x,y center
-obj_position = Position(5, -30)
+obj_position = Position(3, 20)
+
+phase_error_coef = 0.0
+#############################################################
+#                         SIMULATION
+#############################################################
+object = TxDipole(obj_position, is_reflector=True)
+
+simulate(antennas, tx, object, phase_error_coef)
+
+#############################################################
+#                           PLOTS
+#############################################################
 
 
-for output in glob.glob(f"{os.getcwd()}/*.csv"):
-    os.remove(output)
-
-with open("plots&data/pos_err_normal.csv", "a") as myfile:
-    myfile.write("rng_run;method;phase_err;pos_err\n")
-with open("plots&data/pos_err_phinc.csv", "a") as myfile:
-    myfile.write("rng_run;method;phase_err;pos_err\n")
-
-
-for rng_run in range(3):
-    random.seed(rng_run)
-    for phase_err in np.linspace(0.001, 0.06, 100):
-
-        phase_error_coef = phase_err
-        #############################################################
-        #                         SIMULATION
-        #############################################################
-        object = TxDipole(obj_position, is_reflector=True)
-
-        simulate(antennas, tx, object, phase_error_coef)
-
-        #############################################################
-        #                           PLOTS
-        #############################################################
-
-        method = [0, 1, 2]
-        methods = [
-            'analytic',
-            'regression',
-            'variance'
-        ]
-
-        if True:
-            for mt in method:
-                detection_method = select_detection_method(methods[mt])
-                target_position = detection_method(antennas, tx, obj_position, plot=False)
-                pos_err = calculate_distance(target_position, obj_position)
-                # if pos_err is not None:
-                with open("plots&data/pos_err_normal.csv", "a") as myfile:
-                    myfile.write(f"{rng_run};{methods[mt]};{phase_err};{pos_err}\n")
-
-        if True:
-            for mt in method:
-                target_position = detect_object_phase_increment(methods[mt], antennas, tx, object, phase_error_coef, plot=False)
-                pos_err = calculate_distance(target_position, obj_position)
-                # if pos_err is not None:
-                with open("plots&data/pos_err_phinc.csv", "a") as myfile:
-                    myfile.write(f"{rng_run};{methods[mt]};{phase_err};{pos_err}\n")
+fig, ax = plt.subplots()
+plot_scenario(ax, antennas, tx, obj_position)
+pos = detect_object('variance', True, antennas, tx, object, phase_error_coef)
+plot_point(ax, pos)
+print(f'{pos.x}, {pos.y}')
+plt.savefig('scenario.png')
