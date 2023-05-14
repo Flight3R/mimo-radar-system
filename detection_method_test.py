@@ -21,7 +21,7 @@ antennas = [
 ]
 
 # transmitter antenna x,y center
-tx = TxDipole(Position(-15, 10), Signal(phase=0, power=1, frequency=SPEED_OF_LIGHT/wavelength))
+tx = TxDipole(Position(-15, 10), Signal(phase=2, power=1, frequency=SPEED_OF_LIGHT/wavelength))
 
 # measured object x,y center
 obj_position = Position(3, 20)
@@ -38,10 +38,10 @@ simulate(antennas, tx, object, phase_error_coef)
 #                           PLOTS
 #############################################################
 
-
-fig, ax = plt.subplots()
-plot_scenario(ax, antennas, tx, obj_position)
-pos = detect_object('variance', True, antennas, tx, object, phase_error_coef)
-plot_point(ax, pos)
-print(f'{pos.x}, {pos.y}')
-plt.savefig('scenario.png')
+# pos = detect_object_using_antenna_set_analytic(antennas, tx, obj_position, plot=True)
+# pos = detect_object_using_antenna_set_regression(antennas, tx, obj_position, plot=True)
+pos = detect_object_using_antenna_set_variance(antennas, tx, obj_position, plot=True)
+if pos is not None:
+    print(f'{pos.x}, {pos.y}')
+else:
+    print('pos is None')

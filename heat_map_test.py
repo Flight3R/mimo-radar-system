@@ -17,32 +17,16 @@ import time
 #############################################################
 #                       INITIALIZATION
 #############################################################
-wavelength = 2
+dipole_number = 3
 dipole_spread = 1
-antenna_spread = 15
-
-frequency = SPEED_OF_LIGHT/wavelength
-dipoles1 = [
-    RxDipole(Position(-dipole_spread - antenna_spread / 2, 0), Signal(0, 0, frequency)),
-    RxDipole(Position(               - antenna_spread / 2, 0), Signal(0, 0, frequency)),
-    RxDipole(Position( dipole_spread - antenna_spread / 2, 0), Signal(0, 0, frequency))
-]
-
-dipoles2 = [
-    RxDipole(Position(-dipole_spread + antenna_spread / 2, 0), Signal(0, 0, frequency)),
-    RxDipole(Position(               + antenna_spread / 2, 0), Signal(0, 0, frequency)),
-    RxDipole(Position( dipole_spread + antenna_spread / 2, 0), Signal(0, 0, frequency))
-]
-
+wavelength = 2
 
 antennas = [
-    RxAntennaArray(dipoles1),
-    RxAntennaArray(dipoles2)
+    create_antenna_array(dipole_number, dipole_spread, wavelength, center_position=Position(-10.0, 0.0)),
+    create_antenna_array(dipole_number, dipole_spread, wavelength, center_position=Position(10.0, 0.0))
 ]
-
-
 # transmitter antenna x,y center
-tx = TxDipole(Position(15, 10), Signal(phase=0, power=100, frequency=frequency))
+tx = TxDipole(Position(15, 10), Signal(phase=0, power=1, frequency=SPEED_OF_LIGHT/wavelength))
 
 # fig, ax = plt.subplots()
 # plot_scenario(ax, antennas, tx, None)
@@ -54,6 +38,9 @@ methods = [
     'variance'
 ]
 
+edge_length = 100
+resolution = math.sqrt(512 / (edge_length ** 2))
+
 for method in methods:
-    heat_map = create_heat_map(1000, 1/64, method, antennas, tx, phase_error_coef=0.0, plot=True)
+    heat_map = create_heat_map(edge_length, resolution, method, antennas, tx, phase_error_coef=0.0, plot=True)
     # print(heat_map)
