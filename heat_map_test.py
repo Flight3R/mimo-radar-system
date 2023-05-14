@@ -55,5 +55,5 @@ methods = [
 ]
 
 for method in methods:
-    heat_map = create_heat_map(100, 0.5, method, antennas, tx, phase_error_coef=0.0, plot=True)
+    heat_map = create_heat_map(1000, 1/64, method, antennas, tx, phase_error_coef=0.0, plot=True)
     # print(heat_map)

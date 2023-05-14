@@ -342,12 +342,12 @@ def detect_object_using_antenna_set_regression(antennas: list, tx: TxDipole, obj
                         plot_point(ax, point, marker='.')
             try:
                 current_variance = calculate_figure_center_variance(cross_points_of_current_circles)
+                if current_variance > dipole_distance_variance:
+                    raise stat.StatisticsError()
             except stat.StatisticsError as e:
-                print(e) if plot else None
-                return None
-            if current_variance > dipole_distance_variance:
                 breaked = True
                 break
+
             for point in cross_points_of_current_circles:
                 cross_points_of_all_circles.append(point)
 
@@ -426,11 +426,12 @@ def create_heat_map(edge_length: float, resolution: float, method: str, antennas
     antennas_center = calculate_figure_center([ant.antenna_center for ant in antennas])
     x_min = antennas_center.x - edge_length/2
     x_max = antennas_center.x + edge_length/2
-    y_min = antennas_center.y - edge_length/2
-    y_max = antennas_center.y + edge_length/2
+    y_min = antennas_center.y #- edge_length/2
+    y_max = antennas_center.y + edge_length #/2
     x_space = np.arange(x_min, x_max, 1/resolution)
     y_space = np.arange(y_min, y_max, 1/resolution)
     heat_map = np.zeros((len(x_space), len(y_space)))
+    print(f"heatmap_compexity={(len(x_space) * len(y_space))}")
     for xi, x in enumerate(x_space):
         for yi, y in enumerate(y_space):
             obj_position = Position(x, y)
