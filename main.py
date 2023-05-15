@@ -59,25 +59,27 @@ class MainWindow(QMainWindow):
         set_enabled_childrens(self.right_panel.simulation_settings, value)
         self.canvas_panel.set_points_movable(value)
 
-    def run_simulation(self):
-        self.set_enable_settings(False)
+    def back_to_edit(self):
+        self.set_enable_settings(True)
+        self.detected_position = None
+        self.repaint_canvas()
+        self.right_panel.results.clear()
 
+    def run_simulation(self):
         object, antennas, transmitters = self.left_panel.get_data()
         simulation_settings = self.right_panel.simulation_settings.get_settings()
 
         try:
             self.detected_position = detect(object, antennas, transmitters, simulation_settings)
-            print(self.detected_position)
+            self.right_panel.results.set_results(object.position, self.detected_position)
             self.repaint_canvas()
-        except Exception:
-            print("Something goes wrong")
+            self.set_enable_settings(False)
+        except:
+            self.right_panel.results.show_error("Some error occurred")
 
-
-
-    def back_to_edit(self):
-        self.set_enable_settings(True)
-        self.detected_position = None
-        self.repaint_canvas()
+    def generate_heatmap(self):
+        pass
+        # todo nowe niezależne okno z generowaniem heatmapy
 
 
 app = QApplication(sys.argv)

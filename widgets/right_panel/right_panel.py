@@ -9,6 +9,7 @@ from widgets.right_panel.simulation_settings_box import SimulationSettingsBox
 class RightPanel(QWidget):
     drawing_settings_changed = pyqtSignal()
     run_simulation = pyqtSignal()
+    generate_heatmap = pyqtSignal()
     back_to_edit = pyqtSignal()
 
     def __init__(self):
@@ -32,6 +33,10 @@ class RightPanel(QWidget):
         self.run_button.setCheckable(True)
         self.run_button.clicked.connect(self.run_button_clicked)
         vbox.addWidget(self.run_button)
+
+        self.generate_heatmap_button = QPushButton("Generate heatmap")
+        self.generate_heatmap_button.clicked.connect(self.generate_heatmap)
+        vbox.addWidget(self.generate_heatmap_button)
 
         self.results = ResultsBox()
         vbox.addWidget(self.results)

@@ -19,7 +19,7 @@ class SimulationSettingsBox(QGroupBox):
         vbox.setSpacing(0)
 
 
-        self.method_rb = RadioButtons("Method", ["analytic", "regression", "variance"])
+        self.method_rb = RadioButtons("Method", ["variance", "regression", "analytic"])
         self.method_rb.value_changed.connect(self.settings_changed)
         vbox.addWidget(self.method_rb)
 
