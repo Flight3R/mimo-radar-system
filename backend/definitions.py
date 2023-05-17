@@ -261,7 +261,7 @@ def detect_object_using_antenna_set_variance(antennas: list, tx: TxDipole, obj_p
         plot_point(ax, target_position, 'magenta', '*')
         plt.savefig('plots&data/radar_output_variance.png')
 
-    return target_position, all_circles, all_points
+    return target_position, all_circles, all_points, None
 
 
 def detect_object_using_antenna_set_analytic(antennas: list, tx: TxDipole, obj_position: Position, plot=False) -> Position:
@@ -295,7 +295,7 @@ def detect_object_using_antenna_set_analytic(antennas: list, tx: TxDipole, obj_p
     if plot:
         plot_point(ax, target_position, 'magenta', '*')
         plt.savefig('plots&data/radar_output_analytic.png')
-    return target_position, regression_lines_analytic
+    return target_position, regression_lines_analytic, None, None
 
 
 def detect_object_using_antenna_set_regression(antennas: list, tx: TxDipole, obj_position: Position, plot=False) -> Position:
@@ -415,7 +415,7 @@ def detect_object_phase_increment(method: str, antennas: list, tx: TxDipole, obj
     for phase in phases:
         tx.signal.setPhase(phase)
         simulate(antennas, tx, object, phase_error_coef)
-        target_position = detection_function(antennas, tx, object.position, plot=plot)
+        target_position, _, _, _ = detection_function(antennas, tx, object.position, plot=plot)
         if target_position is not None:
             found_positions.append(target_position)
     try:
