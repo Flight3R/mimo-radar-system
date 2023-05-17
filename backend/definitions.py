@@ -198,6 +198,8 @@ def detect_object_using_antenna_set_variance(antennas: list, tx: TxDipole, obj_p
     target_position = None
     angle = np.linspace(0, 2 * np.pi, 150)
     how_many_circles = int(1.1 * calculate_distance(obj_position, antennas[0].antenna_center) / tx.signal.getWavelangth())
+    all_circles = []
+    all_points = []
     for antenna in antennas:
         dipole_distance_variance = calculate_figure_center_variance(
             [antenna.dipoles[0].position, antenna.dipoles[-1].position])
@@ -247,6 +249,8 @@ def detect_object_using_antenna_set_variance(antennas: list, tx: TxDipole, obj_p
                         if current_variance > dipole_distance_variance:
                             break
                         else:
+                            all_circles = circles
+                            all_points = cross_points_of_circles
                             target_position = previous_center
                             break
                     else:
@@ -257,7 +261,7 @@ def detect_object_using_antenna_set_variance(antennas: list, tx: TxDipole, obj_p
         plot_point(ax, target_position, 'magenta', '*')
         plt.savefig('plots&data/radar_output_variance.png')
 
-    return target_position
+    return target_position, all_circles, all_points
 
 
 def detect_object_using_antenna_set_analytic(antennas: list, tx: TxDipole, obj_position: Position, plot=False) -> Position:
@@ -291,7 +295,7 @@ def detect_object_using_antenna_set_analytic(antennas: list, tx: TxDipole, obj_p
     if plot:
         plot_point(ax, target_position, 'magenta', '*')
         plt.savefig('plots&data/radar_output_analytic.png')
-    return target_position
+    return target_position, regression_lines_analytic
 
 
 def detect_object_using_antenna_set_regression(antennas: list, tx: TxDipole, obj_position: Position, plot=False) -> Position:
@@ -304,6 +308,8 @@ def detect_object_using_antenna_set_regression(antennas: list, tx: TxDipole, obj
     how_many_circles = int(1.1 * calculate_distance(obj_position, antennas[0].antenna_center) / tx.signal.getWavelangth())
     # print(how_many_circles)
     regression_lines = []
+    all_circles = []
+    all_points = []
     for antenna in antennas:
         breaked = False
         dipole_distance_variance = calculate_figure_center_variance(
@@ -351,6 +357,10 @@ def detect_object_using_antenna_set_regression(antennas: list, tx: TxDipole, obj
 
             for point in cross_points_of_current_circles:
                 cross_points_of_all_circles.append(point)
+                all_points.append(point)
+
+            for circle in circles:
+                all_circles.append(circle)
 
         if not breaked and len(cross_points_of_all_circles) > 1:
             slope, intercept = calculate_linear_regression(cross_points_of_all_circles)
@@ -369,7 +379,7 @@ def detect_object_using_antenna_set_regression(antennas: list, tx: TxDipole, obj
     if plot:
         plot_point(ax, target_position, 'magenta', '*')
         plt.savefig('plots&data/radar_output_regression.png')
-    return target_position
+    return target_position, regression_lines, all_circles, all_points
 
 
 def simulate(antennas: list, tx: TxDipole, object: TxDipole, phase_error_coef=0.00):
