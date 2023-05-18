@@ -1,5 +1,5 @@
 from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtWidgets import QGroupBox, QVBoxLayout, QCheckBox, QPushButton, QSizePolicy
+from PyQt6.QtWidgets import QGroupBox, QVBoxLayout, QCheckBox, QSizePolicy
 
 from dto.drawing_settings import DrawingSettings
 
@@ -19,29 +19,29 @@ class DrawingSettingsBox(QGroupBox):
         self.show_names.setCheckState(Qt.CheckState.Checked)
         vbox.addWidget(self.show_names)
 
-        self.show_circles = QCheckBox('Show circles')
-        self.show_circles.stateChanged.connect(self.settings_changed)
-        vbox.addWidget(self.show_circles)
+        self.show_grid = QCheckBox('Show grid')
+        self.show_grid.stateChanged.connect(self.settings_changed)
+        self.show_grid.setCheckState(Qt.CheckState.Checked)
+        vbox.addWidget(self.show_grid)
 
-        self.show_lines = QCheckBox('Show lines')
-        self.show_lines.stateChanged.connect(self.settings_changed)
-        vbox.addWidget(self.show_lines)
+        self.show_numbers = QCheckBox('Show axis coordinates')
+        self.show_numbers.stateChanged.connect(self.settings_changed)
+        self.show_numbers.setCheckState(Qt.CheckState.Checked)
+        vbox.addWidget(self.show_numbers)
 
-        self.show_real_object = QCheckBox('Show real object')
-        self.show_real_object.stateChanged.connect(self.settings_changed)
-        vbox.addWidget(self.show_real_object)
+        self.show_helpers = QCheckBox('Show calculation helpers')
+        self.show_helpers.stateChanged.connect(self.settings_changed)
+        vbox.addWidget(self.show_helpers)
 
-        self.show_detected_object = QCheckBox('Show detected object')
-        self.show_detected_object.stateChanged.connect(self.settings_changed)
-        vbox.addWidget(self.show_detected_object)
+
 
         self.setLayout(vbox)
 
     def get_settings(self):
         show_names = self.show_names.checkState().value != 0
-        show_circles = self.show_circles.checkState().value != 0
-        show_lines = self.show_lines.checkState().value != 0
-        show_real_object = self.show_real_object.checkState().value != 0
-        show_detected_object = self.show_detected_object.checkState().value != 0
+        show_grid = self.show_grid.checkState().value != 0
+        show_numbers = self.show_numbers.checkState().value != 0
+        show_helpers = self.show_helpers.checkState().value != 0
 
-        return DrawingSettings(show_names, show_circles, show_lines, show_real_object, show_detected_object)
+
+        return DrawingSettings(show_names, show_grid, show_numbers, show_helpers)

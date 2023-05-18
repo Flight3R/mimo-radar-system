@@ -1,10 +1,6 @@
 class DrawingSettings:
-    def __init__(self, show_names, show_circles, show_lines, show_real_object, show_detected_object):
+    def __init__(self, show_names, show_grid, show_numbers, show_helpers):
         self.show_names = show_names
-        self.show_circles = show_circles
-        self.show_lines = show_lines
-        self.show_real_object = show_real_object
-        self.show_detected_object = show_detected_object
-
-    def __str__(self):
-        return f"show_names={self.show_names}, show_circles={self.show_circles}, show_lines={self.show_lines}, show_real_object={self.show_real_object}, show_detected_object={self.show_detected_object}"
+        self.show_grid = show_grid
+        self.show_numbers = show_numbers
+        self.show_helpers = show_helpers

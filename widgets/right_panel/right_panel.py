@@ -1,7 +1,9 @@
 from PyQt6.QtCore import pyqtSignal, Qt
-from PyQt6.QtWidgets import QGroupBox, QVBoxLayout, QPushButton, QWidget
+from PyQt6.QtWidgets import QGroupBox, QVBoxLayout, QPushButton, QWidget, QMainWindow, QLabel, QDialog
 
 from widgets.right_panel.drawing_settings_box import DrawingSettingsBox
+from widgets.right_panel.heatmap_box import HeatmapBox
+from widgets.right_panel.heatmap_window import HeatmapWindow
 from widgets.right_panel.results_box import ResultsBox
 from widgets.right_panel.simulation_settings_box import SimulationSettingsBox
 
@@ -17,31 +19,35 @@ class RightPanel(QWidget):
         self.setMinimumWidth(300)
         self.setMaximumWidth(400)
 
+        layout = QVBoxLayout()
+        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        layout.setContentsMargins(0, 0, 0, 0)
 
-        vbox = QVBoxLayout()
-        vbox.setAlignment(Qt.AlignmentFlag.AlignTop)
-        vbox.setContentsMargins(0, 0, 0, 0)
-
-        self.simulation_settings = SimulationSettingsBox()
-        vbox.addWidget(self.simulation_settings)
 
         self.drawing_settings = DrawingSettingsBox()
         self.drawing_settings.settings_changed.connect(self.drawing_settings_changed)
-        vbox.addWidget(self.drawing_settings)
+        layout.addWidget(self.drawing_settings)
+
+        self.simulation_settings = SimulationSettingsBox()
+        layout.addWidget(self.simulation_settings)
 
         self.run_button = QPushButton("Run simulation")
         self.run_button.setCheckable(True)
         self.run_button.clicked.connect(self.run_button_clicked)
-        vbox.addWidget(self.run_button)
+        layout.addWidget(self.run_button)
+
+        self.results = ResultsBox()
+        layout.addWidget(self.results)
+
+        self.heatmap_box = HeatmapBox()
+        layout.addWidget(self.heatmap_box)
 
         self.generate_heatmap_button = QPushButton("Generate heatmap")
         self.generate_heatmap_button.clicked.connect(self.generate_heatmap)
-        vbox.addWidget(self.generate_heatmap_button)
+        layout.addWidget(self.generate_heatmap_button)
 
-        self.results = ResultsBox()
-        vbox.addWidget(self.results)
 
-        self.setLayout(vbox)
+        self.setLayout(layout)
 
     def run_button_clicked(self):
         if self.run_button.isChecked():
@@ -50,3 +56,4 @@ class RightPanel(QWidget):
         else:
             self.back_to_edit.emit()
             self.run_button.setText("Run simulation")
+

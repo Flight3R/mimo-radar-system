@@ -1,8 +1,8 @@
-from PyQt6.QtGui import QColorConstants, QColor
+from PyQt6.QtGui import QColorConstants, QColor, QPen, QPainter, QFontMetrics
 from PyQt6.QtWidgets import QGroupBox, QGraphicsView, QGraphicsScene, QVBoxLayout, QGraphicsItem
 
 from globalDef import sandbox_size
-from widgets.canvas_panel.canvas import Canvas
+from widgets.canvas_panel.view import View
 from widgets.canvas_panel.point_item import PointItem
 
 
@@ -13,7 +13,7 @@ class CanvasPanel(QGroupBox):
         self.scene = QGraphicsScene()
         self.scene.setSceneRect(-sandbox_size, -sandbox_size, 2 * sandbox_size, 2 * sandbox_size)
 
-        self.view = Canvas(self.scene)
+        self.view = View(self.scene)
         self.view.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
 
         layout = QVBoxLayout()
@@ -21,7 +21,9 @@ class CanvasPanel(QGroupBox):
         self.setLayout(layout)
 
     def repaint_canvas(self, real_object, detected_object, antennas, transmitters, settings):
+        self.view.settings = settings
         self.scene.clear()
+        self.scene.update()
 
         self.scene.addItem(PointItem(real_object.index, real_object.position, real_object.name, settings.show_names, self.item_moved, QColorConstants.Red))
 
@@ -39,3 +41,4 @@ class CanvasPanel(QGroupBox):
     def set_points_movable(self, value):
         for item in self.scene.items():
             item.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable, value)
+

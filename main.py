@@ -2,10 +2,11 @@ import sys
 
 from PyQt6.QtWidgets import *
 
-from backend.api import detect
+from backend.api import detect, PositionIsNoneError
 from dto.object import Object
 from widgets.canvas_panel.canvas_panel import CanvasPanel
 from widgets.left_panel.left_panel import LeftPanel
+from widgets.right_panel.heatmap_window import HeatmapWindow
 from widgets.right_panel.right_panel import RightPanel
 
 
@@ -40,6 +41,7 @@ class MainWindow(QMainWindow):
         self.right_panel.drawing_settings_changed.connect(self.repaint_canvas)
         self.right_panel.run_simulation.connect(self.run_simulation)
         self.right_panel.back_to_edit.connect(self.back_to_edit)
+        self.right_panel.generate_heatmap.connect(self.generate_heatmap)
         layout.addWidget(self.right_panel)
         layout.setStretchFactor(self.right_panel, 3)
 
@@ -74,12 +76,19 @@ class MainWindow(QMainWindow):
             self.right_panel.results.set_results(object.position, self.detected_position)
             self.repaint_canvas()
             self.set_enable_settings(False)
-        except:
+        except PositionIsNoneError:
+            self.right_panel.results.show_error("No object was detected")
+        except Exception as e:
             self.right_panel.results.show_error("Some error occurred")
+            raise e
 
     def generate_heatmap(self):
-        pass
-        # todo nowe niezależne okno z generowaniem heatmapy
+        object, antennas, transmitters = self.left_panel.get_data()
+        simulation_settings = self.right_panel.simulation_settings.get_settings()
+        edge_length, resolution = self.right_panel.heatmap_box.get_settings()
+
+        heatmap_window = HeatmapWindow(antennas, transmitters, simulation_settings, edge_length, resolution)
+        heatmap_window.exec()
 
 
 app = QApplication(sys.argv)

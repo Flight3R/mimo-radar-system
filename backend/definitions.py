@@ -386,7 +386,7 @@ def guess_target_position(found_positions: list[Position]) -> Position:
     return Position(x_rsm, y_rsm)
 
 
-def select_detection_method(method: str) -> function:
+def select_detection_method(method: str):
     detection_function = None
     match method:
         case "analytic":
@@ -398,14 +398,14 @@ def select_detection_method(method: str) -> function:
     return detection_function
 
 
-def detect_object_phase_increment(method: str, antennas: list, tx: TxDipole, object: TxDipole, phase_error_coef=0.0, plot=False) -> Position:
-    detection_function = select_detection_method(method)
+def detect_object_phase_increment(method, antennas: list, tx: TxDipole, object: TxDipole, phase_error_coef=0.0, plot=False) -> Position:
+
     phases = np.linspace(0, 2 * np.pi, 20, endpoint=False)
     found_positions = []
     for phase in phases:
         tx.signal.setPhase(phase)
         simulate(antennas, tx, object, phase_error_coef)
-        target_position = detection_function(antennas, tx, object.position, plot=plot)
+        target_position = method(antennas, tx, object.position, plot=plot)
         if target_position is not None:
             found_positions.append(target_position)
     try:
@@ -423,35 +423,6 @@ def detect_object_phase_increment(method: str, antennas: list, tx: TxDipole, obj
         plt.savefig(f"plots&data/phase_increment_{method}.png")
     return location_guess
 
-
-def create_heat_map(edge_length: float, resolution: float, method: str, antennas: list, tx: TxDipole, phase_error_coef=0.0, plot=False) -> np.ndarray:
-    antennas_center = calculate_figure_center([ant.antenna_center for ant in antennas])
-    x_min = antennas_center.x - edge_length/2
-    x_max = antennas_center.x + edge_length/2
-    y_min = antennas_center.y #- edge_length/2
-    y_max = antennas_center.y + edge_length #/2
-    x_space = np.arange(x_min, x_max, 1/resolution)
-    y_space = np.arange(y_min, y_max, 1/resolution)
-    heat_map = np.zeros((len(x_space), len(y_space)))
-    print(f"heatmap_compexity={(len(x_space) * len(y_space))}")
-    for xi, x in enumerate(x_space):
-        for yi, y in enumerate(y_space):
-            obj_position = Position(x, y)
-            object = TxDipole(obj_position, is_reflector=True)
-            simulate(antennas, tx, object, phase_error_coef)
-            target_position = detect_object_phase_increment(method, antennas, tx, object, phase_error_coef)
-            pos_err = calculate_distance(target_position, obj_position)
-            result = pos_err if pos_err is not None else np.inf
-            heat_map[xi, yi] = result
-    if plot:
-        fig, ax = plt.subplots()
-        ax.set_aspect('equal')
-        mesh = ax.pcolormesh(x_space, y_space, np.transpose(heat_map), cmap='jet')
-        ax.set_title(f"Heatmap of {method} method\n{edge_length=}m, {resolution=:.3f}samples/square")
-        cbar = fig.colorbar(mesh, ax=ax)
-        cbar.set_label("Position error [m]")
-        fig.savefig(f'plots&data/heatmap_{method}.png')
-    return heat_map
 
 
 def detect_object(method: str, phase_increment: bool, antennas: list, tx: TxDipole, object: TxDipole, phase_error_coef=0.0) -> Position:

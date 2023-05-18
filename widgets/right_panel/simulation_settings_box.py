@@ -15,32 +15,30 @@ class SimulationSettingsBox(QGroupBox):
         super(SimulationSettingsBox, self).__init__("Simulation settings")
         self.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed)
 
-        vbox = QVBoxLayout()
-        vbox.setSpacing(0)
+        layout = QVBoxLayout()
+        layout.setSpacing(0)
 
 
         self.method_rb = RadioButtons("Method", ["variance", "regression", "analytic"])
         self.method_rb.value_changed.connect(self.settings_changed)
-        vbox.addWidget(self.method_rb)
+        layout.addWidget(self.method_rb)
 
         self.phase_increment_rb = RadioButtons("Phase increment", ["yes", "no"])
         self.phase_increment_rb.value_changed.connect(self.settings_changed)
-        vbox.addWidget(self.phase_increment_rb)
+        layout.addWidget(self.phase_increment_rb)
 
 
         self.wavelength_input = FloatValueInput('Wavelength', min_val=0.00000001, max_val=float("inf"), init_val=1.0, step=0.01)
         self.wavelength_input.value_changed.connect(self.settings_changed)
-        vbox.addWidget(self.wavelength_input)
+        layout.addWidget(self.wavelength_input)
 
         self.phase_err_input = FloatValueInput('Phase error coefficient', min_val=0, max_val=1, init_val=0, step=0.01)
         self.phase_err_input.value_changed.connect(self.settings_changed)
-        vbox.addWidget(self.phase_err_input)
+        layout.addWidget(self.phase_err_input)
 
 
 
-
-
-        self.setLayout(vbox)
+        self.setLayout(layout)
 
     def get_settings(self):
         detection_method = self.method_rb.get_value()
