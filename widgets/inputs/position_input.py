@@ -1,7 +1,7 @@
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QWidget, QSpinBox, QLabel, QHBoxLayout
 
-from globalDef import global_big_spacing, sandbox_size
+from global_def import global_big_spacing, sandbox_size
 from dto.position import PositionDto
 
 

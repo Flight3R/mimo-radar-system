@@ -2,7 +2,7 @@ from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QPalette, QColorConstants
 from PyQt6.QtWidgets import QGroupBox, QVBoxLayout, QSizePolicy, QLabel, QPushButton
 
-from globalDef import sandbox_size
+from global_def import sandbox_size
 from widgets.inputs.float_value_input import FloatValueInput
 from widgets.inputs.value_input import ValueInput
 

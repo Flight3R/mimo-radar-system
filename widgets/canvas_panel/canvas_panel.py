@@ -1,7 +1,7 @@
 from PyQt6.QtGui import QColorConstants, QColor, QPen, QPainter, QFontMetrics
 from PyQt6.QtWidgets import QGroupBox, QGraphicsView, QGraphicsScene, QVBoxLayout, QGraphicsItem
 
-from globalDef import sandbox_size
+from global_def import sandbox_size
 from widgets.canvas_panel.view import View
 from widgets.canvas_panel.point_item import PointItem
 
@@ -20,8 +20,9 @@ class CanvasPanel(QGroupBox):
         layout.addWidget(self.view)
         self.setLayout(layout)
 
-    def repaint_canvas(self, real_object, detected_object, antennas, transmitters, settings):
+    def repaint_canvas(self, real_object, detected_object, antennas, transmitters, settings, helpers):
         self.view.settings = settings
+        self.view.helpers = helpers
         self.scene.clear()
         self.scene.update()
 

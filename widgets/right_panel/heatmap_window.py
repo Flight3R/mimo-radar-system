@@ -1,5 +1,7 @@
+import string
 from threading import Thread
 
+from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import QDialog, QLabel, QVBoxLayout, QProgressBar
 
@@ -10,9 +12,15 @@ from dto.transmitter import Transmitter
 
 
 class HeatmapWindow(QDialog):
+    update_progressbar = pyqtSignal([int, int])
+    finish_progressbar = pyqtSignal(str)
+
     def __init__(self, antennas: list[Antenna], transmitter: list[Transmitter],
                  simulation_settings: SimulationSettings, edge_length: float, resolution: float):
         super(HeatmapWindow, self).__init__()
+        self.update_progressbar.connect(self.progressbar_step)
+        self.finish_progressbar.connect(self.progressbar_end)
+
         self.setWindowTitle("Heatmap")
 
         self.setLayout(QVBoxLayout())
@@ -25,16 +33,17 @@ class HeatmapWindow(QDialog):
         self.layout().addWidget(self.progress_bar)
 
         thread = Thread(target=create_heatmap,
-                        args=(antennas, transmitter, simulation_settings, edge_length, resolution, self.step_function, self.end_function))
+                        args=(antennas, transmitter, simulation_settings, edge_length, resolution, self.update_progressbar, self.finish_progressbar))
         thread.start()
 
-    def step_function(self, complexity, iterator):
+    def progressbar_step(self, complexity, iterator):
+        self.setWindowTitle(f'Heatmap complexity={complexity}')
         self.progress_bar.setMinimum(0)
         self.progress_bar.setMaximum(complexity)
         self.progress_bar.setValue(iterator)
         self.label.setText("Generating layout" + str((iterator % 3 + 1) * "."))
 
-    def end_function(self, filename):
+    def progressbar_end(self, filename):
         self.layout().setContentsMargins(0, 0, 0, 0)
 
         self.layout().removeWidget(self.progress_bar)

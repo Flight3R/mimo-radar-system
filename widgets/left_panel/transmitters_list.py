@@ -4,7 +4,7 @@ from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QScrollArea, QLineEdit
 
 from dto.transmitter import Transmitter
-from globalDef import global_small_spacing, global_big_spacing
+from global_def import global_small_spacing, global_big_spacing
 from widgets.inputs.float_value_input import FloatValueInput
 from widgets.inputs.position_input import PositionInput
 

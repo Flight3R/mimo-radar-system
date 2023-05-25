@@ -7,6 +7,7 @@ import statistics as stat
 import random
 
 
+
 SPEED_OF_LIGHT = 299792458
 
 
@@ -190,7 +191,7 @@ def get_quater_of_object_relative_to_antenna(antenna: RxAntennaArray, obj_positi
     return 4
 
 
-def detect_object_using_antenna_set_variance(antennas: list, tx: TxDipole, obj_position: Position, plot=False) -> Position:
+def detect_object_using_antenna_set_variance(antennas: list, tx: TxDipole, obj_position: Position, plot=False) :
     if plot:
         fig, ax = plt.subplots()
         ax.set_aspect('equal')
@@ -261,10 +262,10 @@ def detect_object_using_antenna_set_variance(antennas: list, tx: TxDipole, obj_p
         plot_point(ax, target_position, 'magenta', '*')
         plt.savefig('plots&data/radar_output_variance.png')
 
-    return target_position, all_circles, all_points, None
+    return target_position, None, all_circles, all_points
 
 
-def detect_object_using_antenna_set_analytic(antennas: list, tx: TxDipole, obj_position: Position, plot=False) -> Position:
+def detect_object_using_antenna_set_analytic(antennas: list, tx: TxDipole, obj_position: Position, plot=False):
     if plot:
         fig, ax = plt.subplots()
         ax.set_aspect('equal')
@@ -298,8 +299,7 @@ def detect_object_using_antenna_set_analytic(antennas: list, tx: TxDipole, obj_p
     return target_position, regression_lines_analytic, None, None
 
 
-def detect_object_using_antenna_set_regression(antennas: list, tx: TxDipole, obj_position: Position, plot=False) -> Position:
-    target_position = None
+def detect_object_using_antenna_set_regression(antennas: list, tx: TxDipole, obj_position: Position, plot=False):
     if plot:
         fig, ax = plt.subplots()
         ax.set_aspect('equal')
@@ -374,7 +374,7 @@ def detect_object_using_antenna_set_regression(antennas: list, tx: TxDipole, obj
     except ValueError as e:
         print(e) if plot else None
         print("cannto unpack regression lines in regression method") if plot else None
-        return None
+        return None, None, None, None
     target_position = calculate_crossing_of_lines(line_parameters1, line_parameters2)
     if plot:
         plot_point(ax, target_position, 'magenta', '*')
@@ -396,7 +396,7 @@ def guess_target_position(found_positions: list[Position]) -> Position:
     return Position(x_rsm, y_rsm)
 
 
-def select_detection_method(method: str) -> function:
+def select_detection_method(method: str):
     detection_function = None
     match method:
         case "analytic":
@@ -408,21 +408,20 @@ def select_detection_method(method: str) -> function:
     return detection_function
 
 
-def detect_object_phase_increment(method: str, antennas: list, tx: TxDipole, object: TxDipole, phase_error_coef=0.0, plot=False) -> Position:
-    detection_function = select_detection_method(method)
+def detect_object_phase_increment(method, antennas: list, tx: TxDipole, object: TxDipole, phase_error_coef=0.0, plot=False):
     phases = np.linspace(0, 2 * np.pi, 20, endpoint=False)
     found_positions = []
     for phase in phases:
         tx.signal.setPhase(phase)
         simulate(antennas, tx, object, phase_error_coef)
-        target_position, _, _, _ = detection_function(antennas, tx, object.position, plot=plot)
+        target_position, _, _, _ = method(antennas, tx, object.position, plot=plot)
         if target_position is not None:
             found_positions.append(target_position)
     try:
         location_guess = guess_target_position(found_positions)
     except IndexError as e:
         print(e) if plot else None
-        return None
+        return None, None, None, None
     if plot:
         fig, ax = plt.subplots()
         plot_scenario(ax, antennas, tx, object.position)
@@ -431,46 +430,8 @@ def detect_object_phase_increment(method: str, antennas: list, tx: TxDipole, obj
         plot_point(ax, location_guess, marker='*')
         # plot_point(ax, object.position, marker='*', color='red')
         plt.savefig(f"plots&data/phase_increment_{method}.png")
-    return location_guess
+    return location_guess, None, None, None
 
-
-def create_heat_map(edge_length: float, resolution: float, method: str, antennas: list, tx: TxDipole, phase_error_coef=0.0, plot=False) -> np.ndarray:
-    antennas_center = calculate_figure_center([ant.antenna_center for ant in antennas])
-    x_min = antennas_center.x - edge_length/2
-    x_max = antennas_center.x + edge_length/2
-    y_min = antennas_center.y #- edge_length/2
-    y_max = antennas_center.y + edge_length #/2
-    x_space = np.arange(x_min, x_max, 1/resolution)
-    y_space = np.arange(y_min, y_max, 1/resolution)
-    heat_map = np.zeros((len(x_space), len(y_space)))
-    print(f"heatmap_compexity={(len(x_space) * len(y_space))}")
-    for xi, x in enumerate(x_space):
-        for yi, y in enumerate(y_space):
-            obj_position = Position(x, y)
-            object = TxDipole(obj_position, is_reflector=True)
-            simulate(antennas, tx, object, phase_error_coef)
-            target_position = detect_object_phase_increment(method, antennas, tx, object, phase_error_coef)
-            pos_err = calculate_distance(target_position, obj_position)
-            result = pos_err if pos_err is not None else np.inf
-            heat_map[xi, yi] = result
-    if plot:
-        fig, ax = plt.subplots()
-        ax.set_aspect('equal')
-        mesh = ax.pcolormesh(x_space, y_space, np.transpose(heat_map), cmap='jet')
-        ax.set_title(f"Heatmap of {method} method\n{edge_length=}m, {resolution=:.3f}samples/square")
-        cbar = fig.colorbar(mesh, ax=ax)
-        cbar.set_label("Position error [m]")
-        fig.savefig(f'plots&data/heatmap_{method}.png')
-    return heat_map
-
-
-def detect_object(method: str, phase_increment: bool, antennas: list, tx: TxDipole, object: TxDipole, phase_error_coef=0.0) -> Position:
-    if phase_increment:
-        return detect_object_phase_increment(method, antennas, tx, object, phase_error_coef)
-    else:
-        simulate(antennas, tx, object, phase_error_coef)
-        detection_method = select_detection_method(method)
-        return detection_method(antennas, tx, object.position)
 
 
 #############################################################
@@ -573,3 +534,42 @@ class RxAntennaArray:
         self.antenna_diameter = abs(dipoles[0].position.x - dipoles[-1].position.x)
         self.dipoles = dipoles
         self.antenna_center = calculate_figure_center([dipole.position for dipole in dipoles])
+
+
+def create_heat_map(edge_length: float, resolution: float, method, method_name: str, antennas: list, tx: TxDipole,
+                    phase_error_coef, update_progressbar, finish_progressbar):
+    antennas_center = calculate_figure_center([ant.antenna_center for ant in antennas])
+    x_min = antennas_center.x - edge_length / 2
+    x_max = antennas_center.x + edge_length / 2
+    y_min = antennas_center.y - edge_length / 2
+    y_max = antennas_center.y + edge_length / 2
+    x_space = np.arange(x_min, x_max, resolution)
+    y_space = np.arange(y_min, y_max, resolution)
+    heat_map = np.zeros((len(x_space), len(y_space)))
+
+    complexity = (len(x_space) * len(y_space))
+    iterator = 0
+
+    for xi, x in enumerate(x_space):
+        for yi, y in enumerate(y_space):
+            obj_position = Position(x, y)
+            object = TxDipole(obj_position, is_reflector=True)
+            simulate(antennas, tx, object, phase_error_coef)
+            target_position, _, _, _ = detect_object_phase_increment(method, antennas, tx, object, phase_error_coef)
+            pos_err = calculate_distance(target_position, obj_position)
+            result = pos_err if pos_err is not None else np.inf
+            heat_map[xi, yi] = result
+
+            iterator += 1
+            update_progressbar.emit(complexity, iterator)
+
+    fig, ax = plt.subplots()
+    ax.set_aspect('equal')
+    mesh = ax.pcolormesh(x_space, y_space, np.transpose(heat_map), cmap='jet')
+    ax.set_title(f"Heatmap of {method_name} method\n{edge_length=}m, {resolution=}m")
+    cbar = fig.colorbar(mesh, ax=ax)
+    cbar.set_label("Position error [m]")
+
+    filename = f'heatmap.png'
+    fig.savefig(filename)
+    finish_progressbar.emit(filename)

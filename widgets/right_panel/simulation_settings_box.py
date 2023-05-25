@@ -28,7 +28,7 @@ class SimulationSettingsBox(QGroupBox):
         layout.addWidget(self.phase_increment_rb)
 
 
-        self.wavelength_input = FloatValueInput('Wavelength', min_val=0.00000001, max_val=float("inf"), init_val=1.0, step=0.01)
+        self.wavelength_input = FloatValueInput('Wavelength', min_val=0.00000001, max_val=float("inf"), init_val=5.0, step=0.01)
         self.wavelength_input.value_changed.connect(self.settings_changed)
         layout.addWidget(self.wavelength_input)
 

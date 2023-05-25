@@ -3,6 +3,7 @@ import sys
 from PyQt6.QtWidgets import *
 
 from backend.api import detect, PositionIsNoneError
+from dto.helpers import Helpers
 from dto.object import Object
 from widgets.canvas_panel.canvas_panel import CanvasPanel
 from widgets.left_panel.left_panel import LeftPanel
@@ -19,6 +20,8 @@ def set_enabled_childrens(container, value):
 
 class MainWindow(QMainWindow):
     detected_position = None
+    helpers = Helpers(None, None, None)
+
 
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -54,16 +57,20 @@ class MainWindow(QMainWindow):
         real_object, antennas, transmitters = self.left_panel.get_data()
         detected_object = Object("detected object", real_object.name + "'", self.detected_position)
         settings = self.right_panel.drawing_settings.get_settings()
-        self.canvas_panel.repaint_canvas(real_object, detected_object, antennas, transmitters, settings)
+        helpers = self.helpers
 
-    def set_enable_settings(self, value):
+        self.canvas_panel.repaint_canvas(real_object, detected_object, antennas, transmitters, settings, helpers)
+
+    def enable_modifying(self, value):
         set_enabled_childrens(self.left_panel, value)
         set_enabled_childrens(self.right_panel.simulation_settings, value)
+        set_enabled_childrens(self.right_panel.drawing_settings, value)
         self.canvas_panel.set_points_movable(value)
 
     def back_to_edit(self):
-        self.set_enable_settings(True)
+        self.enable_modifying(True)
         self.detected_position = None
+        self.helpers = Helpers(None, None, None)
         self.repaint_canvas()
         self.right_panel.results.clear()
 
@@ -72,10 +79,10 @@ class MainWindow(QMainWindow):
         simulation_settings = self.right_panel.simulation_settings.get_settings()
 
         try:
-            self.detected_position = detect(object, antennas, transmitters, simulation_settings)
+            self.detected_position, self.helpers = detect(object, antennas, transmitters, simulation_settings)
             self.right_panel.results.set_results(object.position, self.detected_position)
             self.repaint_canvas()
-            self.set_enable_settings(False)
+            self.enable_modifying(False)
         except PositionIsNoneError:
             self.right_panel.results.show_error("No object was detected")
         except Exception as e:

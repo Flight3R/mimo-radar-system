@@ -1,7 +1,7 @@
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QWidget, QSpinBox, QLabel, QHBoxLayout, QVBoxLayout, QDoubleSpinBox
 
-from globalDef import global_small_spacing
+from global_def import global_small_spacing
 
 
 class FloatValueInput(QWidget):

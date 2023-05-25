@@ -1,7 +1,7 @@
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QScrollArea, QLineEdit
 
-from globalDef import global_small_spacing, global_big_spacing
+from global_def import global_small_spacing, global_big_spacing
 from dto.antenna import Antenna
 from widgets.inputs.position_input import PositionInput
 from widgets.inputs.float_value_input import FloatValueInput
@@ -39,10 +39,10 @@ class AntennasList(QWidget):
         main_vbox = QVBoxLayout(self)
         main_vbox.addWidget(scroll_area)
 
-        self.add_item(x_init=0, y_init=0)
-        self.add_item(x_init=50, y_init=0)
+        self.add_item(x_init=0, y_init=0, dipole_number_init=5)
+        self.add_item(x_init=50, y_init=0, dipole_number_init=5)
 
-    def add_item(self, dipole_number_init=3, dipole_spread_init=1, x_init=0, y_init=0):
+    def add_item(self, dipole_number_init=3, dipole_spread_init=5, x_init=0, y_init=0):
         name = 'Antenna {}'.format(self.items_counter)
 
         item = QWidget(self)
