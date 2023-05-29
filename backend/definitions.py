@@ -540,9 +540,9 @@ def create_heat_map(edge_length: float, resolution: float, method, method_name: 
                     phase_error_coef, update_progressbar, finish_progressbar):
     antennas_center = calculate_figure_center([ant.antenna_center for ant in antennas])
     x_min = antennas_center.x - edge_length / 2
-    x_max = antennas_center.x + edge_length / 2
+    x_max = antennas_center.x + edge_length / 2 + 1
     y_min = antennas_center.y - edge_length / 2
-    y_max = antennas_center.y + edge_length / 2
+    y_max = antennas_center.y + edge_length / 2 + 1
     x_space = np.arange(x_min, x_max, resolution)
     y_space = np.arange(y_min, y_max, resolution)
     heat_map = np.zeros((len(x_space), len(y_space)))
@@ -555,11 +555,14 @@ def create_heat_map(edge_length: float, resolution: float, method, method_name: 
             obj_position = Position(x, y)
             object = TxDipole(obj_position, is_reflector=True)
             simulate(antennas, tx, object, phase_error_coef)
-            target_position, _, _, _ = detect_object_phase_increment(method, antennas, tx, object, phase_error_coef)
-            pos_err = calculate_distance(target_position, obj_position)
-            result = pos_err if pos_err is not None else np.inf
-            heat_map[xi, yi] = result
+            try:
+                target_position, _, _, _ = detect_object_phase_increment(method, antennas, tx, object, phase_error_coef)
+                pos_err = calculate_distance(target_position, obj_position)
+                result = pos_err if pos_err is not None else np.inf
+            except ZeroDivisionError:
+                result = np.inf
 
+            heat_map[xi, yi] = result
             iterator += 1
             update_progressbar.emit(complexity, iterator)
 

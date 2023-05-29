@@ -27,24 +27,23 @@ class PointItem(QGraphicsItem):
         painter.setPen(QPen(QColor("black")))
         painter.setBrush(QBrush(QColor(self.color)))
         painter.drawEllipse(
-            QRectF(self.position.x - self.size / 2, self.position.y - self.size / 2, self.size, self.size))
+            QRectF(self.position.x - self.size / 2, -self.position.y - self.size / 2, self.size, self.size))
         if self.show_name:
             painter.setFont(self.font)
-            painter.drawText(self.position.x + self.name_x_offset, self.position.y + self.name_y_offset,
-                             self.name)
+            painter.drawText(self.position.x + self.name_x_offset, -self.position.y + self.name_y_offset, self.name)
 
     def boundingRect(self):
         if self.show_name:
             return QRectF(
                 min(self.position.x - self.size / 2, self.position.x - self.size / 2 + self.name_x_offset),
-                min(self.position.y - self.size / 2, self.position.y - self.size / 2 + self.name_y_offset),
+                min(-self.position.y - self.size / 2, -self.position.y - self.size / 2 + self.name_y_offset),
                 max(self.size + self.name_x_offset + self.name_rect.width(), self.size + self.name_rect.width()) + 5,
-                max(self.size + self.name_y_offset + self.name_rect.height(), self.size + self.name_rect.height()) + 5)
+                min(self.size + self.name_y_offset + self.name_rect.height(), self.size + self.name_rect.height()))
         else:
-            return QRectF(self.position.x - self.size / 2, self.position.y - self.size / 2, self.size, self.size)
+            return QRectF(self.position.x - self.size / 2, -self.position.y - self.size / 2, self.size, self.size)
 
     def get_position(self):
-        return PositionDto(self.position.x + self.x(), self.position.y + self.y())
+        return PositionDto(self.position.x + self.x(), self.position.y - self.y())
 
     def mouseReleaseEvent(self, event):
         super().mouseReleaseEvent(event)

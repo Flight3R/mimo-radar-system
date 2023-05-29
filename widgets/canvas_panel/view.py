@@ -37,8 +37,9 @@ class View(QGraphicsView):
                 name = str(i)
                 name_rect = QFontMetrics(painter.font()).boundingRect(name)
 
-                painter.drawText(i - int(name_rect.width() / 2), name_rect.height() + 1, str(i))
-                painter.drawText(0 - int(name_rect.width() / 2), i + name_rect.height() + 1, str(i))
+                if i != 0:
+                    painter.drawText(i - int(name_rect.width() / 2), name_rect.height() + 1, str(i))
+                    painter.drawText(0 - int(name_rect.width() / 2), -i + name_rect.height() + 1, str(i))
 
 
         if self.helpers.regression_lines is not None and self.settings.show_helpers_lines:
@@ -46,18 +47,18 @@ class View(QGraphicsView):
             for line in self.helpers.regression_lines:
                 start_x = -sandbox_size
                 end_x = sandbox_size
-                start_y = int(line[0] * start_x + line[1])
-                end_y = int(line[0] * end_x + line[1])
-
+                start_y = -int(line[0] * start_x + line[1])
+                end_y = -int(line[0] * end_x + line[1])
                 painter.drawLine(start_x, start_y, end_x, end_y)
 
         if self.helpers.all_points is not None and self.settings.show_helpers_points:
             painter.setPen(QPen(QColorConstants.Black, 1))
             for point in self.helpers.all_points:
-                painter.drawEllipse(QPoint(int(point.x), int(point.y)), 1, 1)
+                painter.drawEllipse(QPoint(int(point.x), -int(point.y)), 1, 1)
 
         if self.helpers.all_circles is not None and self.settings.show_helpers_circles:
             painter.setPen(QPen(QColorConstants.Black, 1))
             for circle in self.helpers.all_circles:
                 radius = int(circle[2])
-                painter.drawEllipse(QPoint(int(circle[0]), int(circle[1])), radius, radius)
+                painter.drawEllipse(QPoint(int(circle[0]), -int(circle[1])), radius, radius)
+

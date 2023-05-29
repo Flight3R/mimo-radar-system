@@ -18,7 +18,7 @@ class ObjectSettings(QWidget):
         self.label.textChanged.connect(self.value_changed)
         layout.addWidget(self.label)
 
-        self.position_input = PositionInput(x_init=25, y_init=-100)
+        self.position_input = PositionInput(x_init=25, y_init=200)
         self.position_input.value_changed.connect(self.value_changed)
         layout.addWidget(self.position_input)
 

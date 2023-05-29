@@ -21,6 +21,7 @@ def set_enabled_childrens(container, value):
 class MainWindow(QMainWindow):
     detected_position = None
     helpers = Helpers(None, None, None)
+    windows = []
 
 
     def __init__(self):
@@ -95,7 +96,9 @@ class MainWindow(QMainWindow):
         edge_length, resolution = self.right_panel.heatmap_box.get_settings()
 
         heatmap_window = HeatmapWindow(antennas, transmitters, simulation_settings, edge_length, resolution)
-        heatmap_window.exec()
+        heatmap_window.show()
+        self.windows.append(heatmap_window)
+
 
 
 app = QApplication(sys.argv)

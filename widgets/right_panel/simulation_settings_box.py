@@ -23,7 +23,7 @@ class SimulationSettingsBox(QGroupBox):
         self.method_rb.value_changed.connect(self.settings_changed)
         layout.addWidget(self.method_rb)
 
-        self.phase_increment_rb = RadioButtons("Phase increment", ["yes", "no"])
+        self.phase_increment_rb = RadioButtons("Phase increment", ["no", "yes"])
         self.phase_increment_rb.value_changed.connect(self.settings_changed)
         layout.addWidget(self.phase_increment_rb)
 

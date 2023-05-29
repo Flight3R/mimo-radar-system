@@ -40,7 +40,7 @@ class TransmittersList(QWidget):
         main_vbox = QVBoxLayout(self)
         main_vbox.addWidget(scroll_area)
 
-        self.add_item(x_init=-50, y_init=-50)
+        self.add_item(x_init=-100, y_init=50)
 
     def add_item(self, dipole_number_init=0, x_init=0, y_init=0):
         if self.number_of_items() >= 1:
