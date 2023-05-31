@@ -39,8 +39,8 @@ class AntennasList(QWidget):
         main_vbox = QVBoxLayout(self)
         main_vbox.addWidget(scroll_area)
 
-        self.add_item(x_init=-50, y_init=0, dipole_number_init=5)
-        self.add_item(x_init=50, y_init=0, dipole_number_init=5)
+        self.add_item(x_init=-50, y_init=0, dipole_number_init=3)
+        self.add_item(x_init=50, y_init=0, dipole_number_init=3)
 
     def add_item(self, dipole_number_init=3, dipole_spread_init=5, x_init=0, y_init=0):
         name = 'Antenna {}'.format(self.items_counter)

@@ -10,7 +10,7 @@ class LeftPanel(QGroupBox):
     value_changed = pyqtSignal()
 
     def __init__(self):
-        super(LeftPanel, self).__init__("Objects")
+        super(LeftPanel, self).__init__("Facilities")
         self.setMinimumWidth(300)
         self.setMaximumWidth(400)
 

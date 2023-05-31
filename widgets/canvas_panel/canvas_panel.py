@@ -8,7 +8,7 @@ from widgets.canvas_panel.point_item import PointItem
 
 class CanvasPanel(QGroupBox):
     def __init__(self, item_moved):
-        super(CanvasPanel, self).__init__("Canvas")
+        super(CanvasPanel, self).__init__("Map")
         self.item_moved = item_moved
         self.scene = QGraphicsScene()
         self.scene.setSceneRect(-sandbox_size, -sandbox_size, 2 * sandbox_size, 2 * sandbox_size)
