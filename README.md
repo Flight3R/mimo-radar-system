@@ -4,10 +4,9 @@ Repo contains PyQt6 app. It is graphical user interface, that allows to simulate
 
 ### Features
 - object detection using three methods: variance, regression, analytical
-- phase increment and phase error coefficient
 - printable calculation helpers
 - facilities drag and drop
-- heatmap generation
+- multi-threaded heatmap generation
 
 
 ### Program operation
