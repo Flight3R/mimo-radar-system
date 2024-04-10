@@ -1,91 +1,108 @@
-from definitions import *
-import os
-import glob
-import time
+import sys
 
-# all lengths are in meters
-# all time in seconds
-# all angles in radians if not specified otherwise
-# all powers in dBW
+from PyQt6.QtWidgets import *
 
-#############################################################
-#                       INITIALIZATION
-#############################################################
-wavelength = 2
-dipole_spread = 1
-antenna_spread = 15
-
-frequency = SPEED_OF_LIGHT/wavelength
-dipoles1 = [
-    RxDipole(Position(-dipole_spread - antenna_spread / 2, 0), Signal(0, 0, frequency)),
-    RxDipole(Position(               - antenna_spread / 2, 0), Signal(0, 0, frequency)),
-    RxDipole(Position( dipole_spread - antenna_spread / 2, 0), Signal(0, 0, frequency))
-]
-
-dipoles2 = [
-    RxDipole(Position(-dipole_spread + antenna_spread / 2, 0), Signal(0, 0, frequency)),
-    RxDipole(Position(               + antenna_spread / 2, 0), Signal(0, 0, frequency)),
-    RxDipole(Position( dipole_spread + antenna_spread / 2, 0), Signal(0, 0, frequency))
-]
+from backend.api import detect, PositionIsNoneError
+from dto.helpers import Helpers
+from dto.object import Object
+from widgets.canvas_panel.canvas_panel import CanvasPanel
+from widgets.left_panel.left_panel import LeftPanel
+from widgets.right_panel.heatmap_window import HeatmapWindow
+from widgets.right_panel.right_panel import RightPanel
 
 
-antennas = [
-    RxAntennaArray(dipoles1),
-    RxAntennaArray(dipoles2)
-]
+def set_enabled_childrens(container, value):
+    for child in container.children():
+        if isinstance(child, QWidget):
+            child.setEnabled(value)
+            set_enabled_childrens(child, value)
 
-# transmitter antenna x,y center
-tx = TxDipole(Position(15, 10), Signal(phase=1, power=400, frequency=frequency))
 
-# measured object x,y center
-obj_position = Position(5, -30)
+class MainWindow(QMainWindow):
+    detected_position = None
+    helpers = Helpers(None, None, None)
+    windows = []
 
-phase_error_coef = 0.00
-#############################################################
-#                         SIMULATION
-#############################################################
-object = TxDipole(obj_position, is_reflector=True)
 
-simulate(antennas, tx, object, phase_error_coef)
+    def __init__(self):
+        super(MainWindow, self).__init__()
 
-#############################################################
-#                           PLOTS
-#############################################################
-for output in glob.glob(f"{os.getcwd()}/*.png"):
-    os.remove(output)
+        self.setWindowTitle("MIMO object radar simulator")
+        self.resize(1200, 700)
 
-method = [0, 1, 2]
-methods = [
-    'analytic',
-    'regression',
-    'variance'
-]
+        layout = QHBoxLayout()
 
-if True:
-    for mt in method:
-        detection_method = select_detection_method(methods[mt])
-        start = time.time()
-        target_position = detection_method(antennas, tx, obj_position, plot=True)
-        end = time.time()
-        print(f"{' OBJECT DETECTION ' :=^50}")
-        print(f"{'method=': <20}{methods[mt]}")
-        if target_position is not None:
-            print(f"{'target_position=' : <20}{target_position :.5}")
-            print(f"{'position error=' : <20}{calculate_distance(target_position, obj_position) :.5}")
-        else:
-            print(f"{'target_position=' : <20}{'Not found'}")
-        print(f"{'time=' : <20}{end-start :.5}")
+        self.left_panel = LeftPanel()
+        self.left_panel.value_changed.connect(self.repaint_canvas)
+        layout.addWidget(self.left_panel)
+        layout.setStretchFactor(self.left_panel, 3)
 
-if True:
-    for mt in method:
-        start = time.time()
-        target_position = detect_object_phase_increment(methods[mt], antennas, tx, object, phase_error_coef, plot=True)
-        end = time.time()
-        print(f"{' OBJECT DETECTION - phase increment ' :=^50}")
-        print(f"{'method=': <20}{methods[mt]}")
-        if target_position is not None:
-            print(f"{'target_position=' : <20}{target_position :.5}")
-            print(f"{'position error=' : <20}{calculate_distance(target_position, obj_position) :.5}")
-        else:
-            print(f"{'target_position=' : <20}{'Not found'}")
-        print(f"{'time=' : <20}{end-start :.5}")
+        self.canvas_panel = CanvasPanel(self.left_panel.update_position)
+        layout.addWidget(self.canvas_panel)
+        layout.setStretchFactor(self.canvas_panel, 4)
+
+        self.right_panel = RightPanel()
+        self.right_panel.drawing_settings_changed.connect(self.repaint_canvas)
+        self.right_panel.run_simulation.connect(self.run_simulation)
+        self.right_panel.back_to_edit.connect(self.back_to_edit)
+        self.right_panel.generate_heatmap.connect(self.generate_heatmap)
+        layout.addWidget(self.right_panel)
+        layout.setStretchFactor(self.right_panel, 3)
+
+        widget = QWidget()
+        widget.setLayout(layout)
+        self.setCentralWidget(widget)
+        self.repaint_canvas()
+
+    def repaint_canvas(self):
+        real_object, antennas, transmitters = self.left_panel.get_data()
+        detected_object = Object("detected object", real_object.name + "'", self.detected_position)
+        settings = self.right_panel.drawing_settings.get_settings()
+        helpers = self.helpers
+
+        self.canvas_panel.repaint_canvas(real_object, detected_object, antennas, transmitters, settings, helpers)
+
+    def enable_modifying(self, value):
+        set_enabled_childrens(self.left_panel, value)
+        set_enabled_childrens(self.right_panel.simulation_settings, value)
+        set_enabled_childrens(self.right_panel.drawing_settings, value)
+        self.canvas_panel.set_points_movable(value)
+
+    def back_to_edit(self):
+        self.enable_modifying(True)
+        self.detected_position = None
+        self.helpers = Helpers(None, None, None)
+        self.repaint_canvas()
+        self.right_panel.results.clear()
+
+    def run_simulation(self):
+        object, antennas, transmitters = self.left_panel.get_data()
+        simulation_settings = self.right_panel.simulation_settings.get_settings()
+
+        try:
+            self.detected_position, self.helpers = detect(object, antennas, transmitters, simulation_settings)
+            self.right_panel.results.set_results(object.position, self.detected_position)
+            self.repaint_canvas()
+            self.enable_modifying(False)
+        except PositionIsNoneError:
+            self.right_panel.results.show_error("No object was detected")
+        except Exception as e:
+            self.right_panel.results.show_error("Some error occurred")
+            raise e
+
+    def generate_heatmap(self):
+        object, antennas, transmitters = self.left_panel.get_data()
+        simulation_settings = self.right_panel.simulation_settings.get_settings()
+        edge_length, resolution = self.right_panel.heatmap_box.get_settings()
+
+        heatmap_window = HeatmapWindow(antennas, transmitters, simulation_settings, edge_length, resolution)
+        heatmap_window.show()
+        self.windows.append(heatmap_window)
+
+
+
+app = QApplication(sys.argv)
+window = MainWindow()
+window.show()
+
+app.exec()
